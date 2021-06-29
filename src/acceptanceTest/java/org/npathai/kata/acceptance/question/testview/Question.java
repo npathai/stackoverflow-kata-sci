@@ -12,4 +12,5 @@ public class Question {
     private List<String> tags;
     private String status;
     private String reason;
+    private String createdAt;
 }

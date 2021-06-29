@@ -1,14 +1,14 @@
 package org.npathai.kata.acceptance.question;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.npathai.kata.acceptance.base.AcceptanceTestBase;
 import org.npathai.kata.acceptance.base.ClearTables;
 import org.npathai.kata.acceptance.base.testview.Page;
 import org.npathai.kata.acceptance.question.dsl.QuestionDsl;
-import org.npathai.kata.acceptance.question.testview.CreateQuestionResponse;
 import org.npathai.kata.acceptance.question.testview.Question;
+import org.npathai.kata.acceptance.user.dsl.UserDsl;
+import org.npathai.kata.acceptance.user.testview.User;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,11 +19,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
 
     public static final String USER_ID = "1";
+    private UserDsl userDsl;
     private QuestionDsl questionDsl;
+    private User user;
 
     @BeforeEach
     public void setUp() {
+        userDsl = new UserDsl(restTemplate);
         questionDsl = new QuestionDsl(restTemplate);
+        user = userDsl.create()
+                .withUsername("jon.skeet")
+                .withEmail("jon.skeet@gmail.com")
+                .exec();
+
     }
 
     @ClearTables
@@ -46,7 +54,7 @@ public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
 
     private Question createQuestion(int i) {
         return questionDsl.create()
-                .byUser(USER_ID)
+                .byUser(user.getId())
                 .withTitle("Question " + i)
                 .withBody("Question body " + i)
                 .withTags(List.of("java", String.valueOf(i)))
