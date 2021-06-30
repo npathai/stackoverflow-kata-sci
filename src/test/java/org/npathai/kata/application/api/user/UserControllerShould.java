@@ -36,9 +36,7 @@ public class UserControllerShould {
 
     @Test
     public void returnCreatedUser() throws BadRequestParametersException {
-        RegisterUserRequestPayload registerUserRequestPayload = new RegisterUserRequestPayload();
-        registerUserRequestPayload.setUsername(USERNAME);
-        registerUserRequestPayload.setEmail(USER_EMAIL);
+        RegisterUserRequestPayload registerUserRequestPayload = aRequestPayload();
 
         User createdUser = aUser();
         given(validator.validate(registerUserRequestPayload)).willReturn(VALID_REQUEST);
@@ -53,9 +51,7 @@ public class UserControllerShould {
 
     @Test
     public void returnStatusBadRequestWhenPayloadIsInvalid() throws BadRequestParametersException {
-        RegisterUserRequestPayload payload = new RegisterUserRequestPayload();
-        payload.setUsername(USERNAME);
-        payload.setEmail(USER_EMAIL);
+        RegisterUserRequestPayload payload = aRequestPayload();
 
         given(validator.validate(payload)).willThrow(new BadRequestParametersException());
 
@@ -65,6 +61,13 @@ public class UserControllerShould {
                 .isEqualTo(HttpStatus.BAD_REQUEST);
 
         verifyNoInteractions(userService);
+    }
+
+    private RegisterUserRequestPayload aRequestPayload() {
+        RegisterUserRequestPayload payload = new RegisterUserRequestPayload();
+        payload.setUsername(USERNAME);
+        payload.setEmail(USER_EMAIL);
+        return payload;
     }
 
     private User aUser() {

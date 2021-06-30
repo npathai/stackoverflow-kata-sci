@@ -5,6 +5,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
@@ -35,12 +36,8 @@ class QuestionControllerShould {
     QuestionController questionController;
 
     @Test
-    public void returnCreatedQuestion() {
-        PostQuestionRequestPayload payload = new PostQuestionRequestPayload();
-        payload.setTitle(QUESTION_TITLE);
-        payload.setBody(QUESTION_BODY);
-        payload.setTags(QUESTION_TAGS);
-
+    public void returnCreatedQuestion() throws BadRequestParametersException {
+        PostQuestionRequestPayload payload = aRequestPayload();
         Question question = aQuestion();
         given(validator.validate(payload)).willReturn(VALID_REQUEST);
         given(questionService.post(VALID_REQUEST)).willReturn(question);
@@ -48,6 +45,26 @@ class QuestionControllerShould {
         ResponseEntity<Question> response = questionController.createQuestion(USER_ID, payload);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).isSameAs(question);
+    }
+
+    @Test
+    public void returnStatusBadRequestWhenPayloadIsInvalid() throws BadRequestParametersException {
+        PostQuestionRequestPayload payload = aRequestPayload();
+
+        given(validator.validate(payload)).willThrow(BadRequestParametersException.class);
+
+        ResponseEntity<Question> response = questionController.createQuestion(USER_ID, payload);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getBody()).isNull();
+    }
+
+    private PostQuestionRequestPayload aRequestPayload() {
+        PostQuestionRequestPayload payload = new PostQuestionRequestPayload();
+        payload.setTitle(QUESTION_TITLE);
+        payload.setBody(QUESTION_BODY);
+        payload.setTags(QUESTION_TAGS);
+        return payload;
     }
 
     private Question aQuestion() {
