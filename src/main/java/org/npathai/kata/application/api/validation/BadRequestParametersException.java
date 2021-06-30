@@ -1,4 +1,4 @@
-package org.npathai.kata.application.api.user;
+package org.npathai.kata.application.api.validation;
 
 public class BadRequestParametersException extends Exception {
 

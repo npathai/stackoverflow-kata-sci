@@ -1,5 +1,6 @@
 package org.npathai.kata.application.api.user;
 
+import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.UserService;
 import org.npathai.kata.application.domain.user.dto.User;
 import org.npathai.kata.application.domain.user.request.CreateUserRequest;
@@ -18,9 +19,14 @@ public class UserController {
         this.createUserRequestValidator = createUserRequestValidator;
     }
 
-    public ResponseEntity<User> createUser(CreateUserRequestPayload request) throws BadRequestParametersException {
-        CreateUserRequest validRequest = createUserRequestValidator.validate(request);
-        User user = userService.create(validRequest);
-        return ResponseEntity.created(null).body(user);
+    public ResponseEntity<User> createUser(CreateUserRequestPayload request) {
+        try {
+            CreateUserRequest validRequest = createUserRequestValidator.validate(request);
+            User user = userService.create(validRequest);
+            return ResponseEntity.created(null).body(user);
+        } catch (BadRequestParametersException ex) {
+            LOG.info("Received invalid request: {}", request);
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
