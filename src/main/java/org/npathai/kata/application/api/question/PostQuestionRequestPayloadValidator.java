@@ -20,6 +20,6 @@ public class PostQuestionRequestPayloadValidator {
         stringValidators.nonNullOrBlank(payload.getTitle());
         stringValidators.nonNullOrBlank(payload.getBody());
         collectionValidators.nonNullOrEmpty(payload.getTags());
-        return null;
+        return PostQuestionRequest.valid(payload.getTitle(), payload.getBody(), payload.getTags());
     }
 }

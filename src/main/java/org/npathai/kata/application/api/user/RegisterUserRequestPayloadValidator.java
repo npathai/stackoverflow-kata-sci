@@ -12,7 +12,7 @@ public class RegisterUserRequestPayloadValidator {
 
     public RegisterUserRequest validate(RegisterUserRequestPayload request) throws BadRequestParametersException {
         validateEmail(request.getEmail());
-        valideUsername(request.getUsername());
+        validateUsername(request.getUsername());
         return RegisterUserRequest.valid(request.getUsername(), request.getEmail());
     }
 
@@ -25,7 +25,7 @@ public class RegisterUserRequestPayloadValidator {
         }
     }
 
-    private void valideUsername(String username) throws BadRequestParametersException {
+    private void validateUsername(String username) throws BadRequestParametersException {
         if (Objects.isNull(username) || username.isBlank()) {
             throw new BadRequestParametersException();
         }

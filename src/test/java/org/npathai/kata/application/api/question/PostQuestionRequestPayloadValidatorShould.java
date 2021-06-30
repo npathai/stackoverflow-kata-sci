@@ -12,6 +12,7 @@ import org.npathai.kata.application.domain.validation.StringValidators;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -23,9 +24,10 @@ class PostQuestionRequestPayloadValidatorShould {
     @Mock
     CollectionValidators collectionValidators;
 
+    PostQuestionRequestPayload payload;
+
     @InjectMocks
     PostQuestionRequestPayloadValidator validator;
-    private PostQuestionRequestPayload payload;
 
     @BeforeEach
     public void setUp() {
@@ -54,5 +56,16 @@ class PostQuestionRequestPayloadValidatorShould {
         validator.validate(payload);
 
         verify(collectionValidators).nonNullOrEmpty(payload.getTags());
+    }
+
+    @Test
+    public void returnValidatedRequest() throws BadRequestParametersException {
+        assertThat(validator.validate(payload))
+                .isNotNull()
+                .satisfies(request -> {
+                    assertThat(request.getTitle()).isEqualTo(payload.getTitle());
+                    assertThat(request.getTags()).isEqualTo(payload.getTags());
+                    assertThat(request.getBody()).isEqualTo(payload.getBody());
+                });
     }
 }
