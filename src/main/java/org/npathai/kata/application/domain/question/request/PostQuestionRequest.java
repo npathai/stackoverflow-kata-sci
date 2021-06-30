@@ -3,7 +3,6 @@ package org.npathai.kata.application.domain.question.request;
 import java.util.List;
 
 public class PostQuestionRequest {
-
     private final String title;
     private final String body;
     private final List<String> tags;

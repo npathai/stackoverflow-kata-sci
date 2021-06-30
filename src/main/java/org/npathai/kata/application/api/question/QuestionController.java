@@ -4,8 +4,12 @@ import org.npathai.kata.application.api.validation.BadRequestParametersException
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
+import org.npathai.kata.application.domain.user.UserId;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+@RestController
+@RequestMapping("api/v1/q")
 public class QuestionController {
 
     private final QuestionService questionService;
@@ -17,10 +21,11 @@ public class QuestionController {
         this.postQuestionRequestPayloadValidator = postQuestionRequestPayloadValidator;
     }
 
-    public ResponseEntity<Question> createQuestion(String userId, PostQuestionRequestPayload payload) {
+    @PostMapping
+    public ResponseEntity<Question> createQuestion(@RequestHeader String userId, @RequestBody PostQuestionRequestPayload payload) {
         try {
             PostQuestionRequest request = postQuestionRequestPayloadValidator.validate(payload);
-            Question question = questionService.post(request);
+            Question question = questionService.post(UserId.validated(userId), request);
             return ResponseEntity.created(null).body(question);
         } catch (BadRequestParametersException ex) {
             return ResponseEntity.badRequest().build();

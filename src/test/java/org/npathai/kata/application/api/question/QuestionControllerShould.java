@@ -9,6 +9,8 @@ import org.npathai.kata.application.api.validation.BadRequestParametersException
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
+import org.npathai.kata.application.domain.tag.dto.Tag;
+import org.npathai.kata.application.domain.user.UserId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -40,7 +42,7 @@ class QuestionControllerShould {
         PostQuestionRequestPayload payload = aRequestPayload();
         Question question = aQuestion();
         given(validator.validate(payload)).willReturn(VALID_REQUEST);
-        given(questionService.post(VALID_REQUEST)).willReturn(question);
+        given(questionService.post(UserId.validated(USER_ID), VALID_REQUEST)).willReturn(question);
 
         ResponseEntity<Question> response = questionController.createQuestion(USER_ID, payload);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -73,7 +75,18 @@ class QuestionControllerShould {
         question.setTitle(QUESTION_TITLE);
         question.setBody(QUESTION_BODY);
         question.setCreatedAt(System.currentTimeMillis());
-        question.setTags(QUESTION_TAGS);
+        question.setTags(List.of(
+                aTag("1", "java"),
+                aTag("2", "kata")
+        ));
+        question.setAuthorId(USER_ID);
         return question;
+    }
+
+    private Tag aTag(String id, String name) {
+        Tag tag = new Tag();
+        tag.setId(id);
+        tag.setName(name);
+        return tag;
     }
 }
