@@ -19,13 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
 
     public static final String USER_ID = "1";
-    private UserDsl userDsl;
     private QuestionDsl questionDsl;
     private User user;
 
     @BeforeEach
     public void setUp() {
-        userDsl = new UserDsl(restTemplate);
+        UserDsl userDsl = new UserDsl(restTemplate);
         questionDsl = new QuestionDsl(restTemplate);
         user = userDsl.create()
                 .withUsername("jon.skeet")

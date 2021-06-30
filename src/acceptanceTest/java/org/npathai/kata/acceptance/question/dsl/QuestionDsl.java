@@ -2,7 +2,6 @@ package org.npathai.kata.acceptance.question.dsl;
 
 import org.npathai.kata.acceptance.base.testview.Page;
 import org.npathai.kata.acceptance.question.testview.CreateQuestionRequest;
-import org.npathai.kata.acceptance.question.testview.CreateQuestionResponse;
 import org.npathai.kata.acceptance.question.testview.Question;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;

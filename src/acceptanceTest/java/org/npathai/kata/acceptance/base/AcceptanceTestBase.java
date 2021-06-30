@@ -1,6 +1,6 @@
 package org.npathai.kata.acceptance.base;
 
-import org.npathai.kata.acceptance.application.StackOverflowKataApplication;
+import org.npathai.kata.application.StackOverflowKataApplication;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
