@@ -18,8 +18,12 @@ public class QuestionController {
     }
 
     public ResponseEntity<Question> createQuestion(String userId, PostQuestionRequestPayload payload) throws BadRequestParametersException {
-        PostQuestionRequest request = postQuestionRequestPayloadValidator.validate(payload);
-        Question question = questionService.post(request);
-        return ResponseEntity.created(null).body(question);
+        try {
+            PostQuestionRequest request = postQuestionRequestPayloadValidator.validate(payload);
+            Question question = questionService.post(request);
+            return ResponseEntity.created(null).body(question);
+        } catch (BadRequestParametersException ex) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
