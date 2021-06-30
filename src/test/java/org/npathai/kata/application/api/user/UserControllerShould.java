@@ -1,22 +1,20 @@
 package org.npathai.kata.application.api.user;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
-import org.npathai.kata.application.domain.UserService;
+import org.npathai.kata.application.domain.user.UserService;
 import org.npathai.kata.application.domain.user.dto.User;
-import org.npathai.kata.application.domain.user.request.CreateUserRequest;
+import org.npathai.kata.application.domain.user.request.RegisterUserRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 public class UserControllerShould {
@@ -25,33 +23,28 @@ public class UserControllerShould {
     public static final String USERNAME = "jon.skeet";
     public static final String USER_ID = "1";
     public static final int USER_REPUTATION = 1;
-    private static final CreateUserRequest VALID_REQUEST = CreateUserRequest.valid(USERNAME, USER_EMAIL);
+    private static final RegisterUserRequest VALID_REQUEST = RegisterUserRequest.valid(USERNAME, USER_EMAIL);
 
     @Mock
     UserService userService;
 
     @Mock
-    CreateUserRequestPayloadValidator validator;
+    RegisterUserRequestPayloadValidator validator;
 
     @InjectMocks
     UserController userController;
 
-    @BeforeEach
-    public void setUp() {
-
-    }
-
     @Test
     public void returnCreatedUser() throws BadRequestParametersException {
-        CreateUserRequestPayload createUserRequestPayload = new CreateUserRequestPayload();
-        createUserRequestPayload.setUsername(USERNAME);
-        createUserRequestPayload.setEmail(USER_EMAIL);
+        RegisterUserRequestPayload registerUserRequestPayload = new RegisterUserRequestPayload();
+        registerUserRequestPayload.setUsername(USERNAME);
+        registerUserRequestPayload.setEmail(USER_EMAIL);
 
         User createdUser = aUser();
-        given(validator.validate(createUserRequestPayload)).willReturn(VALID_REQUEST);
-        given(userService.create(VALID_REQUEST)).willReturn(createdUser);
+        given(validator.validate(registerUserRequestPayload)).willReturn(VALID_REQUEST);
+        given(userService.register(VALID_REQUEST)).willReturn(createdUser);
 
-        ResponseEntity<User> response = userController.createUser(createUserRequestPayload);
+        ResponseEntity<User> response = userController.createUser(registerUserRequestPayload);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(response.getBody()).describedAs("Created user returned does not match the expectation")
                 .isNotNull()
@@ -60,13 +53,13 @@ public class UserControllerShould {
 
     @Test
     public void returnStatusBadRequestWhenPayloadIsInvalid() throws BadRequestParametersException {
-        CreateUserRequestPayload createUserRequestPayload = new CreateUserRequestPayload();
-        createUserRequestPayload.setUsername(USERNAME);
-        createUserRequestPayload.setEmail(USER_EMAIL);
+        RegisterUserRequestPayload registerUserRequestPayload = new RegisterUserRequestPayload();
+        registerUserRequestPayload.setUsername(USERNAME);
+        registerUserRequestPayload.setEmail(USER_EMAIL);
 
-        given(validator.validate(createUserRequestPayload)).willThrow(new BadRequestParametersException());
+        given(validator.validate(registerUserRequestPayload)).willThrow(new BadRequestParametersException());
 
-        ResponseEntity<User> response = userController.createUser(createUserRequestPayload);
+        ResponseEntity<User> response = userController.createUser(registerUserRequestPayload);
 
         assertThat(response.getStatusCode())
                 .isEqualTo(HttpStatus.BAD_REQUEST);

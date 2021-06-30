@@ -34,15 +34,18 @@ public class UserDsl {
         }
 
         public User exec() {
-            HttpEntity<CreateUserRequest> request = new HttpEntity<>(this.request);
-
-            ResponseEntity<User> response = restTemplate.exchange(USER_BASE_URL, HttpMethod.POST,
-                    request, new ParameterizedTypeReference<>() {});
-
+            ResponseEntity<User> response = execReturningResponseEntity();
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
             assertThat(response.getBody()).isNotNull();
 
             return response.getBody();
+        }
+
+        public ResponseEntity<User> execReturningResponseEntity() {
+            HttpEntity<CreateUserRequest> httpRequest = new HttpEntity<>(request);
+
+            return restTemplate.exchange(USER_BASE_URL, HttpMethod.POST,
+                    httpRequest, new ParameterizedTypeReference<>() {});
         }
     }
 

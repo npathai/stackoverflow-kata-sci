@@ -5,7 +5,7 @@ import lombok.ToString;
 
 @Data
 @ToString
-public class CreateUserRequestPayload {
+public class RegisterUserRequestPayload {
     private String username;
     private String email;
 }

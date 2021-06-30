@@ -7,14 +7,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
+import org.npathai.kata.application.domain.user.request.RegisterUserRequest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @DisplayName("Create user request payload validator should")
-class CreateUserRequestPayloadValidatorShould {
+class RegisterUserRequestPayloadValidatorShould {
 
-    CreateUserRequestPayloadValidator validator = new CreateUserRequestPayloadValidator();
-    private CreateUserRequestPayload payload;
+    RegisterUserRequestPayloadValidator validator = new RegisterUserRequestPayloadValidator();
+    private RegisterUserRequestPayload payload;
 
     @BeforeEach
     public void setUp() {
@@ -73,7 +75,7 @@ class CreateUserRequestPayloadValidatorShould {
                     "\r",
                     "\n"
             })
-            public void isEmpty(String whitespace) {
+            public void isBlank(String whitespace) {
                 payload.setUsername(whitespace);
 
                 assertThatThrownBy(() -> validator.validate(payload))
@@ -82,8 +84,15 @@ class CreateUserRequestPayloadValidatorShould {
         }
     }
 
-    private CreateUserRequestPayload aValidPayload() {
-        CreateUserRequestPayload payload = new CreateUserRequestPayload();
+    @Test
+    public void returnValidatedRequest() throws BadRequestParametersException {
+        RegisterUserRequest request = validator.validate(payload);
+        assertThat(request.getEmail()).isEqualTo(payload.getEmail());
+        assertThat(request.getUsername()).isEqualTo(payload.getUsername());
+    }
+
+    private RegisterUserRequestPayload aValidPayload() {
+        RegisterUserRequestPayload payload = new RegisterUserRequestPayload();
         payload.setUsername("username");
         payload.setEmail("email@domain.com");
         return payload;
