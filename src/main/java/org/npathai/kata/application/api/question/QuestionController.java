@@ -17,7 +17,7 @@ public class QuestionController {
         this.postQuestionRequestPayloadValidator = postQuestionRequestPayloadValidator;
     }
 
-    public ResponseEntity<Question> createQuestion(String userId, PostQuestionRequestPayload payload) throws BadRequestParametersException {
+    public ResponseEntity<Question> createQuestion(String userId, PostQuestionRequestPayload payload) {
         try {
             PostQuestionRequest request = postQuestionRequestPayloadValidator.validate(payload);
             Question question = questionService.post(request);

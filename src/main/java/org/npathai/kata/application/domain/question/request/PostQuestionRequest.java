@@ -14,6 +14,18 @@ public class PostQuestionRequest {
         this.tags = tags;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public String getBody() {
+        return body;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
     public static PostQuestionRequest valid(String title, String body, List<String> tags) {
         return new PostQuestionRequest(title, body, tags);
     }
