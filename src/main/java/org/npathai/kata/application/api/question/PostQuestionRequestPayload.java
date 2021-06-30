@@ -1,11 +1,11 @@
-package org.npathai.kata.acceptance.question.testview;
+package org.npathai.kata.application.api.question;
 
 import lombok.Data;
 
 import java.util.List;
 
 @Data
-public class CreateQuestionRequest {
+public class PostQuestionRequestPayload {
     private String title;
     private String body;
     private List<String> tags;

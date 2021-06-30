@@ -31,6 +31,7 @@ public class RegisterUserFeatureShould extends AcceptanceTestBase {
         assertThat(user.getReputation()).isEqualTo(1);
     }
 
+    @ClearTables
     @Test
     public void returnBadRequestResponseWhenRequestIsInvalid() {
         ResponseEntity<User> user = userDsl.create()
@@ -40,5 +41,4 @@ public class RegisterUserFeatureShould extends AcceptanceTestBase {
 
         assertThat(user.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
-
 }

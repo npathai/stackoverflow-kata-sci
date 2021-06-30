@@ -5,12 +5,11 @@ import org.npathai.kata.acceptance.question.testview.CreateQuestionRequest;
 import org.npathai.kata.acceptance.question.testview.Question;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.util.MultiValueMap;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,15 +23,16 @@ public class QuestionDsl {
         this.restTemplate = restTemplate;
     }
 
-    public CreateQuestionCommand create() {
+    public CreateQuestionCommand post() {
         return new CreateQuestionCommand();
     }
 
     public class CreateQuestionCommand {
         private final CreateQuestionRequest request = new CreateQuestionRequest();
+        private String userId;
 
         public CreateQuestionCommand byUser(String userId) {
-            request.setUserId(userId);
+            this.userId = userId;
             return this;
         }
 
@@ -52,8 +52,10 @@ public class QuestionDsl {
         }
 
         public Question exec() {
-            HttpEntity<CreateQuestionRequest> httpRequest = new HttpEntity<>(request);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("userId", userId);
 
+            HttpEntity<CreateQuestionRequest> httpRequest = new HttpEntity<>(request, headers);
             ResponseEntity<Question> response = restTemplate.exchange(QUESTION_BASE_URL, HttpMethod.POST,
                     httpRequest, new ParameterizedTypeReference<>() {});
 

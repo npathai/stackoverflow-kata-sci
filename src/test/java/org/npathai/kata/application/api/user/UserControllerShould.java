@@ -53,13 +53,13 @@ public class UserControllerShould {
 
     @Test
     public void returnStatusBadRequestWhenPayloadIsInvalid() throws BadRequestParametersException {
-        RegisterUserRequestPayload registerUserRequestPayload = new RegisterUserRequestPayload();
-        registerUserRequestPayload.setUsername(USERNAME);
-        registerUserRequestPayload.setEmail(USER_EMAIL);
+        RegisterUserRequestPayload payload = new RegisterUserRequestPayload();
+        payload.setUsername(USERNAME);
+        payload.setEmail(USER_EMAIL);
 
-        given(validator.validate(registerUserRequestPayload)).willThrow(new BadRequestParametersException());
+        given(validator.validate(payload)).willThrow(new BadRequestParametersException());
 
-        ResponseEntity<User> response = userController.createUser(registerUserRequestPayload);
+        ResponseEntity<User> response = userController.createUser(payload);
 
         assertThat(response.getStatusCode())
                 .isEqualTo(HttpStatus.BAD_REQUEST);

@@ -37,7 +37,7 @@ public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
     @Test
     public void returnFirstPageOfQuestionsSortedByDescendingOrderOfTimeOfCreation() {
         List<Question> questions = IntStream.range(0, 10)
-                .mapToObj(this::createQuestion)
+                .mapToObj(this::postQuestion)
                 .collect(Collectors.toList());
 
         Page<Question> firstPage = questionDsl.recent()
@@ -51,8 +51,8 @@ public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
         }
     }
 
-    private Question createQuestion(int i) {
-        return questionDsl.create()
+    private Question postQuestion(int i) {
+        return questionDsl.post()
                 .byUser(user.getId())
                 .withTitle("Question " + i)
                 .withBody("Question body " + i)
