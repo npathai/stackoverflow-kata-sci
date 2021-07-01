@@ -65,7 +65,7 @@ public class QuestionDsl {
                 assertThat(question.getTitle()).isEqualTo(request.getTitle());
                 assertThat(question.getBody()).isEqualTo(request.getBody());
                 assertThat(question.getTags()).map(Tag::getName)
-                        .containsExactlyElementsOf(request.getTags());
+                        .containsExactlyInAnyOrderElementsOf(request.getTags());
             });
             return response.getBody();
         }

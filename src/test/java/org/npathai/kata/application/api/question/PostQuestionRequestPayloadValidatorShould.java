@@ -7,8 +7,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
-import org.npathai.kata.application.domain.validation.CollectionValidators;
-import org.npathai.kata.application.domain.validation.StringValidators;
+import org.npathai.kata.application.api.validation.CollectionValidators;
+import org.npathai.kata.application.api.validation.StringValidators;
 
 import java.util.List;
 

@@ -1,11 +1,10 @@
-package org.npathai.kata.application.domain.validation;
+package org.npathai.kata.application.api.validation;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.npathai.kata.application.api.validation.BadRequestParametersException;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

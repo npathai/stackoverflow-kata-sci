@@ -1,6 +1,4 @@
-package org.npathai.kata.application.domain.validation;
-
-import org.npathai.kata.application.api.validation.BadRequestParametersException;
+package org.npathai.kata.application.api.validation;
 
 import java.util.List;
 import java.util.Objects;

@@ -19,7 +19,7 @@ public abstract class AcceptanceTestBase {
         mySQLContainer = new MySQLContainer<>("mysql:8.0.20")
                 .withUsername("root")
                 .withPassword("root")
-                .withInitScript("schema.sql")
+//                .withInitScript("schema.sql")
                 .withReuse(true);
         mySQLContainer.start();
 

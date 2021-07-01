@@ -1,4 +1,4 @@
-package org.npathai.kata.application.domain.validation;
+package org.npathai.kata.application.api.validation;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

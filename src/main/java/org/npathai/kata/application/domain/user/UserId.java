@@ -13,6 +13,7 @@ import org.npathai.kata.application.domain.services.ValueObject;
 public class UserId {
     String id;
 
+    // TODO add test for scenario where userId is incorrect in request
     public static UserId validated(String id) {
         return new UserId(id);
     }

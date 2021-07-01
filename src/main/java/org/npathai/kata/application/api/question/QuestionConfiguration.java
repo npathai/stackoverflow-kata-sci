@@ -3,9 +3,9 @@ package org.npathai.kata.application.api.question;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.services.IdGenerator;
-import org.npathai.kata.application.domain.tag.TagService;
-import org.npathai.kata.application.domain.validation.CollectionValidators;
-import org.npathai.kata.application.domain.validation.StringValidators;
+import org.npathai.kata.application.domain.tag.persistence.TagRepository;
+import org.npathai.kata.application.api.validation.CollectionValidators;
+import org.npathai.kata.application.api.validation.StringValidators;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +24,9 @@ public class QuestionConfiguration {
     @Bean
     public QuestionService createQuestionService() {
         return new QuestionService(
-                applicationContext.getBean(TagService.class),
+                applicationContext.getBean(TagRepository.class),
                 applicationContext.getBean(QuestionRepository.class),
+                applicationContext.getBean(IdGenerator.class),
                 applicationContext.getBean(IdGenerator.class),
                 applicationContext.getBean(Clock.class)
         );

@@ -3,10 +3,7 @@ package org.npathai.kata.application.domain.question.dto;
 import lombok.Data;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.util.List;
 
 @Data
@@ -18,6 +15,7 @@ public class Question {
     private String title;
     private String body;
     @ManyToMany
+    @JoinColumn(name = "id")
     private List<Tag> tags;
     private long createdAt;
     private String authorId;

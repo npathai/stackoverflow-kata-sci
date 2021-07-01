@@ -1,8 +1,7 @@
-package org.npathai.kata.application.domain.validation;
+package org.npathai.kata.application.api.validation;
 
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.npathai.kata.application.api.validation.BadRequestParametersException;
 
 import java.util.List;
 

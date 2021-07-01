@@ -2,8 +2,8 @@ package org.npathai.kata.application.api.question;
 
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
-import org.npathai.kata.application.domain.validation.CollectionValidators;
-import org.npathai.kata.application.domain.validation.StringValidators;
+import org.npathai.kata.application.api.validation.CollectionValidators;
+import org.npathai.kata.application.api.validation.StringValidators;
 
 public class PostQuestionRequestPayloadValidator {
 
