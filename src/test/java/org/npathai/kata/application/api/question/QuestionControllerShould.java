@@ -86,11 +86,22 @@ class QuestionControllerShould {
         public void returnListOfQuestions() {
             QuestionPage questionPage = new QuestionPage();
             questionPage.setQuestions(questions);
-
             given(questionService.getRecentQuestions()).willReturn(questionPage);
 
             ResponseEntity<QuestionPage> firstPage = questionController.recentQuestions();
+
             assertThat(firstPage.getBody()).isSameAs(questionPage);
+        }
+
+        @Test
+        public void returnsStatusCode200WhenReturningQuestions() {
+            QuestionPage questionPage = new QuestionPage();
+            questionPage.setQuestions(questions);
+            given(questionService.getRecentQuestions()).willReturn(questionPage);
+
+            ResponseEntity<QuestionPage> firstPage = questionController.recentQuestions();
+
+            assertThat(firstPage.getStatusCode()).isEqualTo(HttpStatus.OK);
         }
     }
 

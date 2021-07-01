@@ -36,6 +36,6 @@ public class QuestionController {
     }
 
     public ResponseEntity<QuestionPage> recentQuestions() {
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(questionService.getRecentQuestions());
     }
 }
