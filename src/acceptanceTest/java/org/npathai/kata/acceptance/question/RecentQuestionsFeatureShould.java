@@ -29,7 +29,6 @@ public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
                 .withUsername("jon.skeet")
                 .withEmail("jon.skeet@gmail.com")
                 .exec();
-
     }
 
     @ClearTables

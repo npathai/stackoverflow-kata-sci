@@ -7,6 +7,7 @@ import org.npathai.kata.acceptance.question.dsl.QuestionDsl;
 import org.npathai.kata.acceptance.question.testview.Answer;
 import org.npathai.kata.acceptance.question.testview.Question;
 import org.npathai.kata.acceptance.question.testview.QuestionWithAnswers;
+import org.npathai.kata.acceptance.tag.testview.Tag;
 import org.npathai.kata.acceptance.user.dsl.UserDsl;
 import org.npathai.kata.acceptance.user.testview.User;
 import org.springframework.http.HttpStatus;
@@ -20,63 +21,87 @@ public class ViewQuestionFeatureShould extends AcceptanceTestBase {
 
     private UserDsl userDsl;
     private QuestionDsl questionDsl;
-    private User op;
-    private Question question;
-    private User answerer1;
-    private User answerer2;
+    private String opId;
+    private String questionId;
+    private String answerer1Id;
+    private String answerer2Id;
 
     @BeforeEach
     public void setUp() {
         userDsl = new UserDsl(restTemplate);
         questionDsl = new QuestionDsl(restTemplate);
-        op = userDsl.registerUser()
+        opId = userDsl.registerUser()
                 .withUsername("jon.skeet")
                 .withEmail("jon.skeet@gmail.com")
-                .exec();
+                .exec().getId();
 
-        answerer1 = userDsl.registerUser()
+        answerer1Id = userDsl.registerUser()
                 .withUsername("harry")
                 .withEmail("harry@gmail.com")
-                .exec();
+                .exec().getId();
 
-        answerer2 = userDsl.registerUser()
+        answerer2Id = userDsl.registerUser()
                 .withUsername("alice")
                 .withEmail("alice@gmail.com")
-                .exec();
+                .exec().getId();
 
-        question = questionDsl.aQuestion()
-                .byUser(op.getId())
+        questionId = questionDsl.aQuestion()
+                .byUser(opId)
                 .withTitle("Question")
                 .withBody("Question body")
                 .withTags(List.of("kata", "java"))
-                .exec();
+                .exec().getId();
     }
 
     @Test
     public void returnQuestionWithoutAnswersWhenUnanswered() {
-        QuestionWithAnswers questionWithAnswers = questionDsl.view(question.getId()).exec();
+        QuestionWithAnswers questionWithAnswers = questionDsl.view(questionId).exec();
 
-        assertThat(questionWithAnswers.getQuestion()).isEqualTo(question);
+        assertQuestion(questionWithAnswers);
         assertThat(questionWithAnswers.getAnswers()).isEmpty();
     }
 
     @Test
     public void returnQuestionWithAllAnswers() {
-        Answer answer1 = questionDsl.anAnswer()
-                .byUser(answerer1.getId())
-                .onQuestion(question.getId())
+        String answer1Id = questionDsl.anAnswer()
+                .byUser(answerer1Id)
+                .onQuestion(questionId)
                 .withBody("This is answer 1")
-                .exec();
+                .exec().getId();
 
-        Answer answer2 = questionDsl.anAnswer()
-                .byUser(answerer2.getId())
-                .onQuestion(question.getId())
+        String answer2Id = questionDsl.anAnswer()
+                .byUser(answerer2Id)
+                .onQuestion(questionId)
                 .withBody("This is answer 2")
-                .exec();
+                .exec().getId();
 
-        QuestionWithAnswers questionWithAnswers = questionDsl.view(question.getId()).exec();
-        assertThat(questionWithAnswers.getQuestion()).isEqualTo(question);
-        assertThat(questionWithAnswers.getAnswers()).containsExactlyInAnyOrder(answer1, answer2);
+        QuestionWithAnswers questionWithAnswers = questionDsl.view(questionId).exec();
+
+        assertQuestion(questionWithAnswers);
+        assertThat(questionWithAnswers.getAnswers()).anySatisfy(a -> {
+            assertThat(a.getId()).isEqualTo(answer1Id);
+            assertThat(a.getQuestionId()).isEqualTo(questionId);
+            assertThat(a.getAuthorId()).isEqualTo(answerer1Id);
+            assertThat(a.getBody()).isEqualTo("This is answer 1");
+        });
+
+        assertThat(questionWithAnswers.getAnswers()).anySatisfy(a -> {
+            assertThat(a.getId()).isEqualTo(answer2Id);
+            assertThat(a.getQuestionId()).isEqualTo(questionId);
+            assertThat(a.getAuthorId()).isEqualTo(answerer2Id);
+            assertThat(a.getBody()).isEqualTo("This is answer 2");
+        });
+    }
+
+    private void assertQuestion(QuestionWithAnswers questionWithAnswers) {
+        assertThat(questionWithAnswers.getQuestion()).satisfies(q -> {
+            assertThat(q.getId()).isNotBlank();
+            assertThat(q.getAuthorId()).isEqualTo(opId);
+            assertThat(q.getTitle()).isEqualTo("Question");
+            assertThat(q.getBody()).isEqualTo("Question body");
+            assertThat(q.getTags()).map(Tag::getName)
+                    .containsExactlyInAnyOrderElementsOf(List.of("java", "kata"));
+        });
     }
 
     @Test

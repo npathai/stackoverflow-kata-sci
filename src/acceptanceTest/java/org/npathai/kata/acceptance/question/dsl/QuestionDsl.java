@@ -51,23 +51,19 @@ public class QuestionDsl {
         }
 
         public Question exec() {
+            ResponseEntity<Question> response = execReturningResponseEntity();
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+            assertThat(response.getBody()).isNotNull();
+            return response.getBody();
+        }
+
+        public ResponseEntity<Question> execReturningResponseEntity() {
             HttpHeaders headers = new HttpHeaders();
             headers.add("userId", userId);
 
             HttpEntity<CreateQuestionRequest> httpRequest = new HttpEntity<>(request, headers);
-            ResponseEntity<Question> response = restTemplate.exchange(QUESTION_BASE_URL, HttpMethod.POST,
+            return restTemplate.exchange(QUESTION_BASE_URL, HttpMethod.POST,
                     httpRequest, new ParameterizedTypeReference<>() {});
-
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-            assertThat(response.getBody()).isNotNull();
-            assertThat(response.getBody()).satisfies(question -> {
-                assertThat(question.getAuthorId()).isEqualTo(userId);
-                assertThat(question.getTitle()).isEqualTo(request.getTitle());
-                assertThat(question.getBody()).isEqualTo(request.getBody());
-                assertThat(question.getTags()).map(Tag::getName)
-                        .containsExactlyInAnyOrderElementsOf(request.getTags());
-            });
-            return response.getBody();
         }
     }
 
