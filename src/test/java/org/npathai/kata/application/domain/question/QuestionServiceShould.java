@@ -1,5 +1,6 @@
 package org.npathai.kata.application.domain.question;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -134,6 +135,7 @@ class QuestionServiceShould {
             assertThat(question.getAuthorId()).isEqualTo(USER_ID);
         }
 
+        @SneakyThrows
         private void postQuestion() {
             question = questionService.post(UserId.validated(USER_ID), request);
         }

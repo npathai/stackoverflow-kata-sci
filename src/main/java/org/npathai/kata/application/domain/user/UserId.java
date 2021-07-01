@@ -4,6 +4,8 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import org.npathai.kata.application.api.validation.BadRequestParametersException;
+import org.npathai.kata.application.api.validation.StringValidators;
 import org.npathai.kata.application.domain.services.ValueObject;
 
 @ValueObject
@@ -13,8 +15,8 @@ import org.npathai.kata.application.domain.services.ValueObject;
 public class UserId {
     String id;
 
-    // TODO add test for scenario where userId is incorrect in request
-    public static UserId validated(String id) {
+    public static UserId validated(String id) throws BadRequestParametersException {
+        StringValidators.NON_NULL_OR_BLANK.validate(id);
         return new UserId(id);
     }
 }

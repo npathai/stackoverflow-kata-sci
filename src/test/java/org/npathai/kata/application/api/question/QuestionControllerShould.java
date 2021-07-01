@@ -45,6 +45,7 @@ class QuestionControllerShould {
 
     @Nested
     public class PostQuestionShould {
+
         @Test
         public void returnCreatedQuestion() throws BadRequestParametersException {
             PostQuestionRequestPayload payload = aRequestPayload();
@@ -64,6 +65,16 @@ class QuestionControllerShould {
             given(validator.validate(payload)).willThrow(BadRequestParametersException.class);
 
             ResponseEntity<Question> response = questionController.createQuestion(USER_ID, payload);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).isNull();
+        }
+
+        @Test
+        public void returnStatusBadRequestWhenUserIdIsInvalid() {
+            PostQuestionRequestPayload payload = aRequestPayload();
+
+            ResponseEntity<Question> response = questionController.createQuestion("", payload);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNull();
