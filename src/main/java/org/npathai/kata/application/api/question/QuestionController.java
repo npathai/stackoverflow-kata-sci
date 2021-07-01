@@ -3,13 +3,11 @@ package org.npathai.kata.application.api.question;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.dto.Question;
-import org.npathai.kata.application.domain.question.dto.QuestionPage;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.user.UserId;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collections;
 
 @RestController
 @RequestMapping("api/v1/q")
@@ -35,7 +33,8 @@ public class QuestionController {
         }
     }
 
-    public ResponseEntity<QuestionPage> recentQuestions() {
+    @GetMapping("/recent")
+    public ResponseEntity<Page<Question>> recentQuestions() {
         return ResponseEntity.ok(questionService.getRecentQuestions());
     }
 }

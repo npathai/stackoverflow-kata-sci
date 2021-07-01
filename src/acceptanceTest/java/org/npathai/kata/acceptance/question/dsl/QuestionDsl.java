@@ -81,10 +81,10 @@ public class QuestionDsl {
             HttpEntity<Void> httpRequest = new HttpEntity<>(null);
 
             ResponseEntity<Page<Question>> response = restTemplate.exchange(
-                    RECENT_QUESTIONS_URL, HttpMethod.POST,
+                    RECENT_QUESTIONS_URL, HttpMethod.GET,
                     httpRequest, new ParameterizedTypeReference<>() {});
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
 
             return response.getBody();

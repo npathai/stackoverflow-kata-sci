@@ -10,11 +10,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.dto.Question;
-import org.npathai.kata.application.domain.question.dto.QuestionPage;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.user.UserId;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -84,22 +84,21 @@ class QuestionControllerShould {
 
         @Test
         public void returnListOfQuestions() {
-            QuestionPage questionPage = new QuestionPage();
-            questionPage.setQuestions(questions);
+            Page<Question> questionPage = new PageImpl<>(questions);
             given(questionService.getRecentQuestions()).willReturn(questionPage);
 
-            ResponseEntity<QuestionPage> firstPage = questionController.recentQuestions();
+            ResponseEntity<Page<Question>> firstPage = questionController.recentQuestions();
 
             assertThat(firstPage.getBody()).isSameAs(questionPage);
         }
 
         @Test
         public void returnsStatusCode200WhenReturningQuestions() {
-            QuestionPage questionPage = new QuestionPage();
-            questionPage.setQuestions(questions);
+            Page<Question> questionPage = new PageImpl<>(questions);
+
             given(questionService.getRecentQuestions()).willReturn(questionPage);
 
-            ResponseEntity<QuestionPage> firstPage = questionController.recentQuestions();
+            ResponseEntity<Page<Question>> firstPage = questionController.recentQuestions();
 
             assertThat(firstPage.getStatusCode()).isEqualTo(HttpStatus.OK);
         }

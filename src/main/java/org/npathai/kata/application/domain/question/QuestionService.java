@@ -1,19 +1,18 @@
 package org.npathai.kata.application.domain.question;
 
 import org.npathai.kata.application.domain.question.dto.Question;
-import org.npathai.kata.application.domain.question.dto.QuestionPage;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.UserId;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.Clock;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class QuestionService {
@@ -85,7 +84,7 @@ public class QuestionService {
         return createdTags;
     }
 
-    public QuestionPage getRecentQuestions() {
-        throw new UnsupportedOperationException();
+    public Page<Question> getRecentQuestions() {
+        return questionRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")));
     }
 }

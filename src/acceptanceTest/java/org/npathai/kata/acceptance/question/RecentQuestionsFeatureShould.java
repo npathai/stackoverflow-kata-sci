@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
 
-    public static final String USER_ID = "1";
     private QuestionDsl questionDsl;
     private User user;
 
@@ -44,7 +43,10 @@ public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
         int pageSize = 10;
         assertThat(firstPage.getContent().size()).isEqualTo(pageSize);
         for (int i = 0; i < pageSize; i++) {
-            assertThat(firstPage.getContent().get(i)).isEqualTo(questions.get(questions.size() - 1 - i));
+            assertThat(firstPage.getContent().get(i))
+                    .usingRecursiveComparison()
+                    .ignoringCollectionOrderInFields("tags")
+                    .isEqualTo(questions.get(questions.size() - 1 - i));
         }
     }
 
@@ -53,7 +55,7 @@ public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
                 .byUser(user.getId())
                 .withTitle("Question " + i)
                 .withBody("Question body " + i)
-                .withTags(List.of("java", String.valueOf(i)))
+                .withTags(List.of(String.valueOf(i), "java"))
                 .exec();
     }
 }

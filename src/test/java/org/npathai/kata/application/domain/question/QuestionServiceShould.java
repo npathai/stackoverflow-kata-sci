@@ -4,6 +4,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.domain.question.dto.Question;
@@ -13,6 +15,7 @@ import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.UserId;
+import org.springframework.data.domain.*;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -141,5 +144,65 @@ class QuestionServiceShould {
             javaTag.setName(name);
             return javaTag;
         }
+    }
+
+    @Nested
+    public class RecentQuestionsShould {
+
+        @Captor
+        ArgumentCaptor<PageRequest> captor;
+        private List<Question> questions;
+        private PageImpl<Question> questionPage;
+
+        @BeforeEach
+        public void setUp() {
+            questions = List.of(aQuestion("1"),
+                    aQuestion("2")
+            );
+
+            questionPage = new PageImpl<>(this.questions);
+        }
+
+        @Test
+        public void returnsPageContainingQuestions() {
+            given(questionRepository.findAll(any(Pageable.class))).willReturn(questionPage);
+
+            Page<Question> recentQuestionsPage = questionService.getRecentQuestions();
+
+            assertThat(recentQuestionsPage.getContent()).isEqualTo(questions);
+        }
+
+        @Test
+        public void returnTenQuestionsSortedInDescendingOrderOfCreationDate() {
+            given(questionRepository.findAll(any(Pageable.class))).willReturn(questionPage);
+
+            questionService.getRecentQuestions();
+
+            verify(questionRepository).findAll(captor.capture());
+            assertThat(captor.getValue().getPageNumber()).isEqualTo(0);
+            assertThat(captor.getValue().getPageSize()).isEqualTo(10);
+            assertThat(captor.getValue().getSort()).isEqualTo(Sort.by(Sort.Direction.DESC, "createdAt"));
+        }
+    }
+
+    private Question aQuestion(String id) {
+        Question question = new Question();
+        question.setId(id);
+        question.setTitle(QUESTION_TITLE);
+        question.setBody(QUESTION_BODY);
+        question.setCreatedAt(System.currentTimeMillis());
+        question.setTags(List.of(
+                aTag("1", "java"),
+                aTag("2", "kata")
+        ));
+        question.setAuthorId(USER_ID);
+        return question;
+    }
+
+    private Tag aTag(String id, String name) {
+        Tag tag = new Tag();
+        tag.setId(id);
+        tag.setName(name);
+        return tag;
     }
 }
