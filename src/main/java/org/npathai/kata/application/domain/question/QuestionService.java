@@ -99,6 +99,7 @@ public class QuestionService {
     }
 
     public Answer postAnswer(UserId authorId, QuestionId questionId, PostAnswerRequest request) {
+        Question question = getQuestionExplosively(questionId);
         Answer answer = new Answer();
         answer.setId(answerIdGenerator.get());
         answer.setAuthorId(authorId.getId());
@@ -106,17 +107,25 @@ public class QuestionService {
         answer.setBody(request.getBody());
 
         answerRepository.save(answer);
+
+        question.setAnswerCount(question.getAnswerCount() + 1);
+        questionRepository.save(question);
+
         return answer;
     }
 
     public QuestionWithAnswers getQuestion(QuestionId questionId) {
-        Question question = questionRepository.findById(questionId.getId())
-                .orElseThrow(UnknownEntityException::new);
-
+        Question question = getQuestionExplosively(questionId);
         List<Answer> answers = answerRepository.findByQuestionId(question.getId());
         QuestionWithAnswers questionWithAnswers = new QuestionWithAnswers();
         questionWithAnswers.setQuestion(question);
         questionWithAnswers.setAnswers(answers);
         return questionWithAnswers;
+    }
+
+    private Question getQuestionExplosively(QuestionId questionId) {
+        Question question = questionRepository.findById(questionId.getId())
+                .orElseThrow(UnknownEntityException::new);
+        return question;
     }
 }

@@ -19,4 +19,5 @@ public class Question {
     private List<Tag> tags;
     private long createdAt;
     private String authorId;
+    private int answerCount;
 }

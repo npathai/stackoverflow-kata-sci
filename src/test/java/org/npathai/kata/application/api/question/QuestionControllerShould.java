@@ -139,7 +139,7 @@ class QuestionControllerShould {
 
 
         @BeforeEach
-        public void setUp() throws BadRequestParametersException {
+        public void setUp() {
             payload = new PostAnswerRequestPayload();
             payload.setBody(ANSWER_BODY);
 
@@ -241,6 +241,7 @@ class QuestionControllerShould {
                 aTag("2", "kata")
         ));
         question.setAuthorId(USER_ID);
+        question.setAnswerCount(1);
         return question;
     }
 

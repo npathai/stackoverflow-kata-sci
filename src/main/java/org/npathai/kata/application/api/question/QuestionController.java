@@ -1,6 +1,5 @@
 package org.npathai.kata.application.api.question;
 
-import lombok.SneakyThrows;
 import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayload;
 import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayloadValidator;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;

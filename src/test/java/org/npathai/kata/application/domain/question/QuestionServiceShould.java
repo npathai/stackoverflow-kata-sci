@@ -206,6 +206,7 @@ class QuestionServiceShould {
     @Nested
     public class PostAnswerShould {
 
+        private Question question;
         private Answer answer;
         private PostAnswerRequest postAnswerRequest;
 
@@ -213,6 +214,9 @@ class QuestionServiceShould {
         public void setUp() {
             postAnswerRequest = PostAnswerRequest.valid("Body");
             given(answerIdGenerator.get()).willReturn(ANSWER_ID);
+
+            question = aQuestion(QUESTION_ID);
+            given(questionRepository.findById(QUESTION_ID)).willReturn(Optional.of(question));
 
             answer = new Answer();
             answer.setId(ANSWER_ID);
@@ -233,6 +237,16 @@ class QuestionServiceShould {
         public void saveAnswerToRepository() {
             questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
             verify(answerRepository).save(answer);
+        }
+
+        @Test
+        @SneakyThrows
+        public void incrementAnswerCount() {
+            questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
+            questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
+
+            assertThat(question.getAnswerCount()).isEqualTo(2);
+            verify(questionRepository, times(2)).save(question);
         }
     }
 
