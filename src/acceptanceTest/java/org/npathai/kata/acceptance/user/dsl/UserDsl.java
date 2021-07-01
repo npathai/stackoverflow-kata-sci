@@ -49,7 +49,7 @@ public class UserDsl {
         }
     }
 
-    public CreateUserCommand create() {
+    public CreateUserCommand registerUser() {
         return new CreateUserCommand();
     }
 }

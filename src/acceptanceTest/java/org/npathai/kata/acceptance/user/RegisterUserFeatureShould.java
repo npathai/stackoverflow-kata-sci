@@ -23,7 +23,7 @@ public class RegisterUserFeatureShould extends AcceptanceTestBase {
     @ClearTables
     @Test
     public void createUserWithReputationOfOne() {
-        User user = userDsl.create()
+        User user = userDsl.registerUser()
                 .withUsername("jon.skeet")
                 .withEmail("jon.skeet@gmail.com")
                 .exec();
@@ -34,7 +34,7 @@ public class RegisterUserFeatureShould extends AcceptanceTestBase {
     @ClearTables
     @Test
     public void returnBadRequestResponseWhenRequestIsInvalid() {
-        ResponseEntity<User> user = userDsl.create()
+        ResponseEntity<User> user = userDsl.registerUser()
                 .withEmail("invalid")
                 .withUsername("")
                 .execReturningResponseEntity();

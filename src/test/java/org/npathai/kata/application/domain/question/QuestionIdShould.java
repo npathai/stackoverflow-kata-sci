@@ -1,17 +1,18 @@
-package org.npathai.kata.application.domain.user;
+package org.npathai.kata.application.domain.question;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class UserIdShould {
+class QuestionIdShould {
 
     @Test
     public void throwExceptionWhenIdIsNull() {
-        assertThatThrownBy(() -> UserId.validated(null)).isInstanceOf(BadRequestParametersException.class);
+        assertThatThrownBy(() -> QuestionId.validated(null)).isInstanceOf(BadRequestParametersException.class);
     }
 
     @ParameterizedTest
@@ -22,6 +23,11 @@ class UserIdShould {
             "\r"
     })
     public void throwExceptionWhenStringIsBlank(String whitespace) {
-        assertThatThrownBy(() -> UserId.validated(whitespace)).isInstanceOf(BadRequestParametersException.class);
+        assertThatThrownBy(() -> QuestionId.validated(whitespace)).isInstanceOf(BadRequestParametersException.class);
+    }
+
+    @Test
+    public void returnValidInstanceOfQuestionId() throws BadRequestParametersException {
+        assertThat(QuestionId.validated("1").getId()).isEqualTo("1");
     }
 }

@@ -25,7 +25,7 @@ public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
     public void setUp() {
         UserDsl userDsl = new UserDsl(restTemplate);
         questionDsl = new QuestionDsl(restTemplate);
-        user = userDsl.create()
+        user = userDsl.registerUser()
                 .withUsername("jon.skeet")
                 .withEmail("jon.skeet@gmail.com")
                 .exec();
@@ -51,7 +51,7 @@ public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
     }
 
     private Question postQuestion(int i) {
-        return questionDsl.post()
+        return questionDsl.aQuestion()
                 .byUser(user.getId())
                 .withTitle("Question " + i)
                 .withBody("Question body " + i)

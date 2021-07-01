@@ -7,8 +7,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayload;
+import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayloadValidator;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
+import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.QuestionService;
+import org.npathai.kata.application.domain.question.answer.dto.Answer;
+import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.tag.dto.Tag;
@@ -33,12 +38,19 @@ class QuestionControllerShould {
     public static final List<String> QUESTION_TAGS = List.of("java", "kata");
     private static final String QUESTION_ID = "1";
     private static final PostQuestionRequest VALID_REQUEST = PostQuestionRequest.valid(QUESTION_TITLE, QUESTION_BODY, QUESTION_TAGS);
+    private static final String ANSWERER_ID = "2";
+    public static final String ANSWER_BODY = "This is my answer";
+    public static final String ANSWER_ID = "1";
+    private static final PostAnswerRequest VALID_POST_ANSWER_REQUEST = PostAnswerRequest.valid(ANSWER_BODY);
 
     @Mock
     QuestionService questionService;
 
     @Mock
-    PostQuestionRequestPayloadValidator validator;
+    PostQuestionRequestPayloadValidator questionPayloadValidator;
+
+    @Mock
+    PostAnswerRequestPayloadValidator answerPayloadValidator;
 
     @InjectMocks
     QuestionController questionController;
@@ -50,7 +62,7 @@ class QuestionControllerShould {
         public void returnCreatedQuestion() throws BadRequestParametersException {
             PostQuestionRequestPayload payload = aRequestPayload();
             Question question = aQuestion();
-            given(validator.validate(payload)).willReturn(VALID_REQUEST);
+            given(questionPayloadValidator.validate(payload)).willReturn(VALID_REQUEST);
             given(questionService.post(UserId.validated(USER_ID), VALID_REQUEST)).willReturn(question);
 
             ResponseEntity<Question> response = questionController.createQuestion(USER_ID, payload);
@@ -62,7 +74,7 @@ class QuestionControllerShould {
         public void returnStatusBadRequestWhenPayloadIsInvalid() throws BadRequestParametersException {
             PostQuestionRequestPayload payload = aRequestPayload();
 
-            given(validator.validate(payload)).willThrow(BadRequestParametersException.class);
+            given(questionPayloadValidator.validate(payload)).willThrow(BadRequestParametersException.class);
 
             ResponseEntity<Question> response = questionController.createQuestion(USER_ID, payload);
 
@@ -112,6 +124,54 @@ class QuestionControllerShould {
             ResponseEntity<Page<Question>> firstPage = questionController.recentQuestions();
 
             assertThat(firstPage.getStatusCode()).isEqualTo(HttpStatus.OK);
+        }
+    }
+
+    @Nested
+    public class AnsweringFeatureShould {
+        private PostAnswerRequestPayload payload;
+        private Answer answer;
+
+
+        @BeforeEach
+        public void setUp() throws BadRequestParametersException {
+            payload = new PostAnswerRequestPayload();
+            payload.setBody(ANSWER_BODY);
+
+            answer = new Answer();
+            answer.setId(ANSWER_ID);
+            answer.setAuthorId(QuestionControllerShould.ANSWERER_ID);
+            answer.setBody(QuestionControllerShould.ANSWER_BODY);
+            answer.setQuestionId(QUESTION_ID);
+        }
+
+        @Test
+        public void returnCreatedAnswer() throws BadRequestParametersException {
+            given(answerPayloadValidator.validate(payload)).willReturn(VALID_POST_ANSWER_REQUEST);
+            given(questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID),
+                    VALID_POST_ANSWER_REQUEST)).willReturn(answer);
+
+            ResponseEntity<Answer> response = questionController.createAnswer(ANSWERER_ID, QUESTION_ID, payload);
+
+            assertThat(response.getBody()).isSameAs(answer);
+        }
+
+        @Test
+        public void returns201CreatedStatusCode() throws BadRequestParametersException {
+            given(answerPayloadValidator.validate(payload)).willReturn(VALID_POST_ANSWER_REQUEST);
+            given(questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID),
+                    VALID_POST_ANSWER_REQUEST)).willReturn(answer);
+
+            assertThat(questionController.createAnswer(ANSWERER_ID, QUESTION_ID, payload).getStatusCode())
+                    .isEqualTo(HttpStatus.CREATED);
+        }
+
+        @Test
+        public void returns400BadRequestStatusCodeWhenRequestIsInvalid() throws BadRequestParametersException {
+            given(answerPayloadValidator.validate(payload)).willThrow(BadRequestParametersException.class);
+
+            assertThat(questionController.createAnswer(ANSWERER_ID, QUESTION_ID, payload).getStatusCode())
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
         }
     }
 

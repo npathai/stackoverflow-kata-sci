@@ -1,5 +1,7 @@
 package org.npathai.kata.application.domain.question;
 
+import org.npathai.kata.application.domain.question.answer.dto.Answer;
+import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
@@ -86,5 +88,9 @@ public class QuestionService {
 
     public Page<Question> getRecentQuestions() {
         return questionRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")));
+    }
+
+    public Answer postAnswer(UserId authorId, QuestionId validated, PostAnswerRequest request) {
+        throw new UnsupportedOperationException();
     }
 }

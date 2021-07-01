@@ -1,7 +1,13 @@
 package org.npathai.kata.application.api.question;
 
+import lombok.SneakyThrows;
+import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayload;
+import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayloadValidator;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
+import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.QuestionService;
+import org.npathai.kata.application.domain.question.answer.dto.Answer;
+import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.user.UserId;
@@ -15,11 +21,14 @@ public class QuestionController {
 
     private final QuestionService questionService;
     private final PostQuestionRequestPayloadValidator postQuestionRequestPayloadValidator;
+    private final PostAnswerRequestPayloadValidator postAnswerRequestPayloadValidator;
 
     public QuestionController(QuestionService questionService,
-                              PostQuestionRequestPayloadValidator postQuestionRequestPayloadValidator) {
+                              PostQuestionRequestPayloadValidator postQuestionRequestPayloadValidator,
+                              PostAnswerRequestPayloadValidator postAnswerRequestPayloadValidator) {
         this.questionService = questionService;
         this.postQuestionRequestPayloadValidator = postQuestionRequestPayloadValidator;
+        this.postAnswerRequestPayloadValidator = postAnswerRequestPayloadValidator;
     }
 
     @PostMapping
@@ -36,5 +45,15 @@ public class QuestionController {
     @GetMapping("/recent")
     public ResponseEntity<Page<Question>> recentQuestions() {
         return ResponseEntity.ok(questionService.getRecentQuestions());
+    }
+
+    public ResponseEntity<Answer> createAnswer(String userId, String questionId, PostAnswerRequestPayload payload) {
+        try {
+            PostAnswerRequest request = postAnswerRequestPayloadValidator.validate(payload);
+            return ResponseEntity.created(null).body(questionService.postAnswer(UserId.validated(userId),
+                    QuestionId.validated(questionId), request));
+        } catch (BadRequestParametersException ex) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }
