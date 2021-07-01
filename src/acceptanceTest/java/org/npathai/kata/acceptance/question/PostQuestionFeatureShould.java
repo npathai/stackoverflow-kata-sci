@@ -46,6 +46,7 @@ public class PostQuestionFeatureShould extends AcceptanceTestBase {
             assertThat(question.getBody()).isEqualTo("Body");
             assertThat(question.getTags()).map(Tag::getName)
                     .containsExactlyInAnyOrderElementsOf(List.of("java", "kata"));
+            assertThat(question.getAnswerCount()).isEqualTo(0);
         });
     }
 }

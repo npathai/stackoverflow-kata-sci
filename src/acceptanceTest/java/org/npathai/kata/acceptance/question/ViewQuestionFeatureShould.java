@@ -3,13 +3,11 @@ package org.npathai.kata.acceptance.question;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.npathai.kata.acceptance.base.AcceptanceTestBase;
+import org.npathai.kata.acceptance.base.ClearTables;
 import org.npathai.kata.acceptance.question.dsl.QuestionDsl;
-import org.npathai.kata.acceptance.question.testview.Answer;
-import org.npathai.kata.acceptance.question.testview.Question;
 import org.npathai.kata.acceptance.question.testview.QuestionWithAnswers;
 import org.npathai.kata.acceptance.tag.testview.Tag;
 import org.npathai.kata.acceptance.user.dsl.UserDsl;
-import org.npathai.kata.acceptance.user.testview.User;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -53,14 +51,23 @@ public class ViewQuestionFeatureShould extends AcceptanceTestBase {
                 .exec().getId();
     }
 
+    @ClearTables
     @Test
     public void returnQuestionWithoutAnswersWhenUnanswered() {
         QuestionWithAnswers questionWithAnswers = questionDsl.view(questionId).exec();
 
-        assertQuestion(questionWithAnswers);
+        assertThat(questionWithAnswers.getQuestion()).satisfies(q -> {
+            assertThat(q.getId()).isNotBlank();
+            assertThat(q.getAuthorId()).isEqualTo(opId);
+            assertThat(q.getTitle()).isEqualTo("Question");
+            assertThat(q.getBody()).isEqualTo("Question body");
+            assertThat(q.getTags()).map(Tag::getName)
+                    .containsExactlyInAnyOrderElementsOf(List.of("java", "kata"));
+        });
         assertThat(questionWithAnswers.getAnswers()).isEmpty();
     }
 
+    @ClearTables
     @Test
     public void returnQuestionWithAllAnswers() {
         String answer1Id = questionDsl.anAnswer()
@@ -77,7 +84,15 @@ public class ViewQuestionFeatureShould extends AcceptanceTestBase {
 
         QuestionWithAnswers questionWithAnswers = questionDsl.view(questionId).exec();
 
-        assertQuestion(questionWithAnswers);
+        assertThat(questionWithAnswers.getQuestion()).satisfies(q -> {
+            assertThat(q.getId()).isNotBlank();
+            assertThat(q.getAuthorId()).isEqualTo(opId);
+            assertThat(q.getTitle()).isEqualTo("Question");
+            assertThat(q.getBody()).isEqualTo("Question body");
+            assertThat(q.getTags()).map(Tag::getName)
+                    .containsExactlyInAnyOrderElementsOf(List.of("java", "kata"));
+        });
+
         assertThat(questionWithAnswers.getAnswers()).anySatisfy(a -> {
             assertThat(a.getId()).isEqualTo(answer1Id);
             assertThat(a.getQuestionId()).isEqualTo(questionId);
@@ -93,17 +108,7 @@ public class ViewQuestionFeatureShould extends AcceptanceTestBase {
         });
     }
 
-    private void assertQuestion(QuestionWithAnswers questionWithAnswers) {
-        assertThat(questionWithAnswers.getQuestion()).satisfies(q -> {
-            assertThat(q.getId()).isNotBlank();
-            assertThat(q.getAuthorId()).isEqualTo(opId);
-            assertThat(q.getTitle()).isEqualTo("Question");
-            assertThat(q.getBody()).isEqualTo("Question body");
-            assertThat(q.getTags()).map(Tag::getName)
-                    .containsExactlyInAnyOrderElementsOf(List.of("java", "kata"));
-        });
-    }
-
+    @ClearTables
     @Test
     public void return404NotFoundStatusCodeWhenQuestionIsNotFound() {
         ResponseEntity<QuestionWithAnswers> response = questionDsl.view("unknown")
