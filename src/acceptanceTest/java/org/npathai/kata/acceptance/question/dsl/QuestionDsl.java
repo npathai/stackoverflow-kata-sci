@@ -104,16 +104,20 @@ public class QuestionDsl {
         }
 
         public QuestionWithAnswers exec() {
-            HttpEntity<Void> httpRequest = new HttpEntity<>(null);
-
-            ResponseEntity<QuestionWithAnswers> response = restTemplate.exchange(
-                    String.format(GET_QUESTION_URL_TEMPLATE, questionId), HttpMethod.GET,
-                    httpRequest, new ParameterizedTypeReference<>() {});
+            ResponseEntity<QuestionWithAnswers> response = execReturningResponseEntity();
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
 
             return response.getBody();
+        }
+
+        public ResponseEntity<QuestionWithAnswers> execReturningResponseEntity() {
+            HttpEntity<Void> httpRequest = new HttpEntity<>(null);
+
+            return restTemplate.exchange(
+                    String.format(GET_QUESTION_URL_TEMPLATE, questionId), HttpMethod.GET,
+                    httpRequest, new ParameterizedTypeReference<>() {});
         }
     }
 

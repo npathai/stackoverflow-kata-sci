@@ -1,11 +1,14 @@
 package org.npathai.kata.application.domain.question;
 
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
+import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
 import org.npathai.kata.application.domain.question.dto.Question;
+import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.services.IdGenerator;
+import org.npathai.kata.application.domain.services.UnknownEntityException;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.UserId;
@@ -21,16 +24,21 @@ public class QuestionService {
 
     private final TagRepository tagRepository;
     private final QuestionRepository questionRepository;
+    private final AnswerRepository answerRepository;
     private final IdGenerator questionIdGenerator;
     private final IdGenerator tagIdGenerator;
+    private final IdGenerator answerIdGenerator;
     private final Clock clock;
 
     public QuestionService(TagRepository tagRepository, QuestionRepository questionRepository,
-                           IdGenerator questionIdGenerator, IdGenerator tagIdGenerator, Clock clock) {
+                           AnswerRepository answerRepository, IdGenerator questionIdGenerator,
+                           IdGenerator tagIdGenerator, IdGenerator answerIdGenerator, Clock clock) {
         this.tagRepository = tagRepository;
         this.questionRepository = questionRepository;
+        this.answerRepository = answerRepository;
         this.questionIdGenerator = questionIdGenerator;
         this.tagIdGenerator = tagIdGenerator;
+        this.answerIdGenerator = answerIdGenerator;
         this.clock = clock;
     }
 
@@ -90,7 +98,25 @@ public class QuestionService {
         return questionRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")));
     }
 
-    public Answer postAnswer(UserId authorId, QuestionId validated, PostAnswerRequest request) {
-        throw new UnsupportedOperationException();
+    public Answer postAnswer(UserId authorId, QuestionId questionId, PostAnswerRequest request) {
+        Answer answer = new Answer();
+        answer.setId(answerIdGenerator.get());
+        answer.setAuthorId(authorId.getId());
+        answer.setQuestionId(questionId.getId());
+        answer.setBody(request.getBody());
+
+        answerRepository.save(answer);
+        return answer;
+    }
+
+    public QuestionWithAnswers getQuestion(QuestionId questionId) {
+        Question question = questionRepository.findById(questionId.getId())
+                .orElseThrow(UnknownEntityException::new);
+
+        List<Answer> answers = answerRepository.findByQuestionId(question.getId());
+        QuestionWithAnswers questionWithAnswers = new QuestionWithAnswers();
+        questionWithAnswers.setQuestion(question);
+        questionWithAnswers.setAnswers(answers);
+        return questionWithAnswers;
     }
 }

@@ -8,6 +8,10 @@ public class PostAnswerRequest {
         this.body = body;
     }
 
+    public String getBody() {
+        return body;
+    }
+
     public static PostAnswerRequest valid(String body) {
         return new PostAnswerRequest(body);
     }

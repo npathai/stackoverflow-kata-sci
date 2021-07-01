@@ -1,5 +1,7 @@
 package org.npathai.kata.application.api.question;
 
+import lombok.SneakyThrows;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -15,7 +17,9 @@ import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
 import org.npathai.kata.application.domain.question.dto.Question;
+import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
+import org.npathai.kata.application.domain.services.UnknownEntityException;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.user.UserId;
 import org.springframework.data.domain.Page;
@@ -28,6 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -128,7 +133,7 @@ class QuestionControllerShould {
     }
 
     @Nested
-    public class AnsweringFeatureShould {
+    public class PostingAnswerShould {
         private PostAnswerRequestPayload payload;
         private Answer answer;
 
@@ -175,6 +180,48 @@ class QuestionControllerShould {
         }
     }
 
+    @Nested
+    public class GetQuestionShould {
+
+
+        @Test
+        @SneakyThrows
+        public void returnQuestionWithAnswers() {
+
+            Question question  = aQuestion(QUESTION_ID);
+
+            Answer answer = new Answer();
+            answer.setId(ANSWER_ID);
+            answer.setAuthorId(QuestionControllerShould.ANSWERER_ID);
+            answer.setBody(QuestionControllerShould.ANSWER_BODY);
+            answer.setQuestionId(QUESTION_ID);
+
+            QuestionWithAnswers questionWithAnswers = new QuestionWithAnswers();
+            questionWithAnswers.setQuestion(question);
+            questionWithAnswers.setAnswers(List.of(answer));
+
+            given(questionService.getQuestion(QuestionId.validated(QUESTION_ID))).willReturn(questionWithAnswers);
+
+            ResponseEntity<QuestionWithAnswers> response = questionController.getQuestionById(QUESTION_ID);
+            assertThat(response.getBody()).isSameAs(questionWithAnswers);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        }
+
+        @Test
+        public void return400BadRequestStatusCodeWhenQuestionIdIsInvalid() {
+            ResponseEntity<QuestionWithAnswers> response = questionController.getQuestionById("");
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        public void return404NotFoundWhenQuestionNotFound() {
+            given(questionService.getQuestion(any())).willThrow(UnknownEntityException.class);
+
+            assertThat(questionController.getQuestionById("unknown").getStatusCode())
+                    .isEqualTo(HttpStatus.NOT_FOUND);
+        }
+    }
+
     private PostQuestionRequestPayload aRequestPayload() {
         PostQuestionRequestPayload payload = new PostQuestionRequestPayload();
         payload.setTitle(QUESTION_TITLE);
@@ -196,6 +243,8 @@ class QuestionControllerShould {
         question.setAuthorId(USER_ID);
         return question;
     }
+
+
 
     private Question aQuestion() {
         return aQuestion(QUESTION_ID);

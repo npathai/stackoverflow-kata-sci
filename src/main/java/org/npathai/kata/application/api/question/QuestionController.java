@@ -9,7 +9,9 @@ import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
 import org.npathai.kata.application.domain.question.dto.Question;
+import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
+import org.npathai.kata.application.domain.services.UnknownEntityException;
 import org.npathai.kata.application.domain.user.UserId;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -47,13 +49,28 @@ public class QuestionController {
         return ResponseEntity.ok(questionService.getRecentQuestions());
     }
 
-    public ResponseEntity<Answer> createAnswer(String userId, String questionId, PostAnswerRequestPayload payload) {
+    @PostMapping("/{questionId}/a")
+    public ResponseEntity<Answer> createAnswer(@RequestHeader String userId, @PathVariable String questionId,
+                                               @RequestBody PostAnswerRequestPayload payload) {
         try {
             PostAnswerRequest request = postAnswerRequestPayloadValidator.validate(payload);
             return ResponseEntity.created(null).body(questionService.postAnswer(UserId.validated(userId),
                     QuestionId.validated(questionId), request));
         } catch (BadRequestParametersException ex) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+
+    @GetMapping("/{questionId}")
+    public ResponseEntity<QuestionWithAnswers> getQuestionById(@PathVariable String questionId) {
+        try {
+            QuestionWithAnswers  questionWithAnswers = questionService.getQuestion(QuestionId.validated(questionId));
+            return ResponseEntity.ok().body(questionWithAnswers);
+        } catch(BadRequestParametersException ex) {
+            return ResponseEntity.badRequest().build();
+        } catch (UnknownEntityException ex) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

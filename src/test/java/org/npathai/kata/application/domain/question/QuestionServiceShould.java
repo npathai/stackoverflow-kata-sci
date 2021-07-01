@@ -9,10 +9,15 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.npathai.kata.application.domain.question.answer.dto.Answer;
+import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
+import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
 import org.npathai.kata.application.domain.question.dto.Question;
+import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.services.IdGenerator;
+import org.npathai.kata.application.domain.services.UnknownEntityException;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.UserId;
@@ -22,8 +27,10 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
@@ -31,11 +38,13 @@ import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class QuestionServiceShould {
-    private static final String USER_ID = "1";
-    private static final String QUESTION_ID = "1";
+    private static final String USER_ID = "U1";
+    private static final String QUESTION_ID = "Q1";
     private static final String QUESTION_TITLE = "First Question";
     private static final String QUESTION_BODY = "First question body";
     private static final List<String> QUESTION_TAGS = List.of("java", "kata");
+    private static final String ANSWER_ID = "A1";
+    private static final String ANSWERER_ID = "U2";
 
     @Mock
     QuestionRepository questionRepository;
@@ -44,10 +53,16 @@ class QuestionServiceShould {
     TagRepository tagRepository;
 
     @Mock
+    AnswerRepository answerRepository;
+
+    @Mock
     IdGenerator questionIdGenerator;
 
     @Mock
     IdGenerator tagIdGenerator;
+
+    @Mock
+    IdGenerator answerIdGenerator;
 
     Clock clock;
     QuestionService questionService;
@@ -57,7 +72,8 @@ class QuestionServiceShould {
     @BeforeEach
     public void setUp() {
         clock = fixedClock();
-        questionService = new QuestionService(tagRepository, questionRepository, questionIdGenerator, tagIdGenerator, clock);
+        questionService = new QuestionService(tagRepository, questionRepository,
+                answerRepository, questionIdGenerator, tagIdGenerator, answerIdGenerator, clock);
         request = PostQuestionRequest.valid(QUESTION_TITLE, QUESTION_BODY, QUESTION_TAGS);
     }
 
@@ -185,6 +201,73 @@ class QuestionServiceShould {
             assertThat(captor.getValue().getPageSize()).isEqualTo(10);
             assertThat(captor.getValue().getSort()).isEqualTo(Sort.by(Sort.Direction.DESC, "createdAt"));
         }
+    }
+
+    @Nested
+    public class PostAnswerShould {
+
+        private Answer answer;
+        private PostAnswerRequest postAnswerRequest;
+
+        @BeforeEach
+        public void setUp() {
+            postAnswerRequest = PostAnswerRequest.valid("Body");
+            given(answerIdGenerator.get()).willReturn(ANSWER_ID);
+
+            answer = new Answer();
+            answer.setId(ANSWER_ID);
+            answer.setAuthorId(ANSWERER_ID);
+            answer.setQuestionId(QUESTION_ID);
+            answer.setBody("Body");
+        }
+
+        @Test
+        @SneakyThrows
+        public void returnCreatedAnswer() {
+            Answer postedAnswer = questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
+            assertThat(postedAnswer).isEqualTo(answer);
+        }
+        
+        @Test
+        @SneakyThrows
+        public void saveAnswerToRepository() {
+            questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
+            verify(answerRepository).save(answer);
+        }
+    }
+
+    @Nested
+    public class GetQuestionShould {
+
+        @Test
+        @SneakyThrows
+        public void returnQuestionWithAnswers() {
+            Question question  = aQuestion(QUESTION_ID);
+
+            Answer answer = new Answer();
+            answer.setId(ANSWER_ID);
+            answer.setAuthorId(ANSWERER_ID);
+            answer.setQuestionId(QUESTION_ID);
+            answer.setBody("Body");
+
+            QuestionWithAnswers expected = new QuestionWithAnswers();
+            expected.setQuestion(question);
+            expected.setAnswers(List.of(answer));
+
+            given(questionRepository.findById(QUESTION_ID)).willReturn(Optional.of(question));
+            given(answerRepository.findByQuestionId(QUESTION_ID)).willReturn(List.of(answer));
+
+            QuestionWithAnswers  questionWithAnswers = questionService.getQuestion(QuestionId.validated(QUESTION_ID));
+
+            assertThat(questionWithAnswers).isEqualTo(expected);
+        }
+
+        @Test
+        public void throwExceptionWhenQuestionWithIdNotFound() {
+            assertThatThrownBy(() -> questionService.getQuestion(QuestionId.validated("unknown")))
+                    .isInstanceOf(UnknownEntityException.class);
+        }
+
     }
 
     private Question aQuestion(String id) {

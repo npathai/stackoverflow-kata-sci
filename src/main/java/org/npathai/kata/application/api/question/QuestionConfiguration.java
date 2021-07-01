@@ -4,6 +4,7 @@ import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayload
 import org.npathai.kata.application.api.validation.CollectionValidators;
 import org.npathai.kata.application.api.validation.StringValidators;
 import org.npathai.kata.application.domain.question.QuestionService;
+import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
@@ -17,9 +18,12 @@ public class QuestionConfiguration {
 
     @Bean
     public QuestionService createQuestionService(TagRepository tagRepository, QuestionRepository questionRepository,
-                                                 IdGenerator questionIdGenerator, IdGenerator answerIdGenerator,
+                                                 AnswerRepository answerRepository,
+                                                 IdGenerator questionIdGenerator, IdGenerator tagIdGenerator,
+                                                 IdGenerator answerIdGenerator,
                                                  Clock clock) {
-        return new QuestionService(tagRepository, questionRepository, questionIdGenerator, answerIdGenerator, clock);
+        return new QuestionService(tagRepository, questionRepository, answerRepository, questionIdGenerator,
+                tagIdGenerator, answerIdGenerator, clock);
     }
 
     @Bean
@@ -29,7 +33,7 @@ public class QuestionConfiguration {
     }
 
     @Bean
-    public PostAnswerRequestPayloadValidator postAnswerRequestPayloadValidator() {
-        return new PostAnswerRequestPayloadValidator();
+    public PostAnswerRequestPayloadValidator postAnswerRequestPayloadValidator(StringValidators stringValidators) {
+        return new PostAnswerRequestPayloadValidator(stringValidators);
     }
 }

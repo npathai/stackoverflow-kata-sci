@@ -9,6 +9,8 @@ import org.npathai.kata.acceptance.question.testview.Question;
 import org.npathai.kata.acceptance.question.testview.QuestionWithAnswers;
 import org.npathai.kata.acceptance.user.dsl.UserDsl;
 import org.npathai.kata.acceptance.user.testview.User;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -74,6 +76,14 @@ public class ViewQuestionFeatureShould extends AcceptanceTestBase {
 
         QuestionWithAnswers questionWithAnswers = questionDsl.view(question.getId()).exec();
         assertThat(questionWithAnswers.getQuestion()).isEqualTo(question);
-        assertThat(questionWithAnswers.getAnswers()).containsExactly(answer1, answer2);
+        assertThat(questionWithAnswers.getAnswers()).containsExactlyInAnyOrder(answer1, answer2);
+    }
+
+    @Test
+    public void return404NotFoundStatusCodeWhenQuestionIsNotFound() {
+        ResponseEntity<QuestionWithAnswers> response = questionDsl.view("unknown")
+                .execReturningResponseEntity();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 }
