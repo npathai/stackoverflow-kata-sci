@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class QuestionDsl {
     private static final String QUESTION_BASE_URL = "/api/v1/q";
-    private static final String RECENT_QUESTIONS_PAGED_URL_TEMPLATE = QUESTION_BASE_URL + "/recent?page=%d&size=%d";
+    private static final String RECENT_QUESTIONS_URL = QUESTION_BASE_URL + "/recent";
 
     private final TestRestTemplate restTemplate;
 
@@ -77,24 +77,11 @@ public class QuestionDsl {
 
     public class RecentQuestionsCommand {
 
-        private int pageNo;
-        private int pageSize;
-
-        public RecentQuestionsCommand page(int pageNo) {
-            this.pageNo = pageNo;
-            return this;
-        }
-
-        public RecentQuestionsCommand perPage(int pageSize) {
-            this.pageSize = pageSize;
-            return this;
-        }
-
         public Page<Question> exec() {
             HttpEntity<Void> httpRequest = new HttpEntity<>(null);
 
             ResponseEntity<Page<Question>> response = restTemplate.exchange(
-                    String.format(RECENT_QUESTIONS_PAGED_URL_TEMPLATE, pageNo, pageSize), HttpMethod.POST,
+                    RECENT_QUESTIONS_URL, HttpMethod.POST,
                     httpRequest, new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);

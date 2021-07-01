@@ -1,5 +1,7 @@
 package org.npathai.kata.application.api.question;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -8,13 +10,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.dto.Question;
+import org.npathai.kata.application.domain.question.dto.QuestionPage;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.user.UserId;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -37,28 +43,55 @@ class QuestionControllerShould {
     @InjectMocks
     QuestionController questionController;
 
-    @Test
-    public void returnCreatedQuestion() throws BadRequestParametersException {
-        PostQuestionRequestPayload payload = aRequestPayload();
-        Question question = aQuestion();
-        given(validator.validate(payload)).willReturn(VALID_REQUEST);
-        given(questionService.post(UserId.validated(USER_ID), VALID_REQUEST)).willReturn(question);
+    @Nested
+    public class PostQuestionShould {
+        @Test
+        public void returnCreatedQuestion() throws BadRequestParametersException {
+            PostQuestionRequestPayload payload = aRequestPayload();
+            Question question = aQuestion();
+            given(validator.validate(payload)).willReturn(VALID_REQUEST);
+            given(questionService.post(UserId.validated(USER_ID), VALID_REQUEST)).willReturn(question);
 
-        ResponseEntity<Question> response = questionController.createQuestion(USER_ID, payload);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getBody()).isSameAs(question);
+            ResponseEntity<Question> response = questionController.createQuestion(USER_ID, payload);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+            assertThat(response.getBody()).isSameAs(question);
+        }
+
+        @Test
+        public void returnStatusBadRequestWhenPayloadIsInvalid() throws BadRequestParametersException {
+            PostQuestionRequestPayload payload = aRequestPayload();
+
+            given(validator.validate(payload)).willThrow(BadRequestParametersException.class);
+
+            ResponseEntity<Question> response = questionController.createQuestion(USER_ID, payload);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+            assertThat(response.getBody()).isNull();
+        }
     }
 
-    @Test
-    public void returnStatusBadRequestWhenPayloadIsInvalid() throws BadRequestParametersException {
-        PostQuestionRequestPayload payload = aRequestPayload();
+    @Nested
+    public class RecentQuestionsShould {
 
-        given(validator.validate(payload)).willThrow(BadRequestParametersException.class);
+        private List<Question> questions;
 
-        ResponseEntity<Question> response = questionController.createQuestion(USER_ID, payload);
+        @BeforeEach
+        public void setUp() {
+            questions = IntStream.range(0, 2)
+                    .mapToObj(id -> aQuestion(String.valueOf(id)))
+                    .collect(Collectors.toList());
+        }
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).isNull();
+        @Test
+        public void returnListOfQuestions() {
+            QuestionPage questionPage = new QuestionPage();
+            questionPage.setQuestions(questions);
+
+            given(questionService.getRecentQuestions()).willReturn(questionPage);
+
+            ResponseEntity<QuestionPage> firstPage = questionController.recentQuestions();
+            assertThat(firstPage.getBody()).isSameAs(questionPage);
+        }
     }
 
     private PostQuestionRequestPayload aRequestPayload() {
@@ -69,9 +102,9 @@ class QuestionControllerShould {
         return payload;
     }
 
-    private Question aQuestion() {
+    private Question aQuestion(String id) {
         Question question = new Question();
-        question.setId(QUESTION_ID);
+        question.setId(id);
         question.setTitle(QUESTION_TITLE);
         question.setBody(QUESTION_BODY);
         question.setCreatedAt(System.currentTimeMillis());
@@ -81,6 +114,10 @@ class QuestionControllerShould {
         ));
         question.setAuthorId(USER_ID);
         return question;
+    }
+
+    private Question aQuestion() {
+        return aQuestion(QUESTION_ID);
     }
 
     private Tag aTag(String id, String name) {

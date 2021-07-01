@@ -35,18 +35,15 @@ public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
 
     @ClearTables
     @Test
-    public void returnFirstPageOfQuestionsSortedByDescendingOrderOfTimeOfCreation() {
-        List<Question> questions = IntStream.range(0, 10)
+    public void returnFirstTenQuestionsSortedByDescendingOrderOfTimeOfCreation() {
+        List<Question> questions = IntStream.range(0, 20)
                 .mapToObj(this::postQuestion)
                 .collect(Collectors.toList());
 
-        Page<Question> firstPage = questionDsl.recent()
-                .page(0)
-                .perPage(2)
-                .exec();
-
-        assertThat(firstPage.getContent().size()).isEqualTo(2);
-        for (int i = 0; i < 2; i++) {
+        Page<Question> firstPage = questionDsl.recent().exec();
+        int pageSize = 10;
+        assertThat(firstPage.getContent().size()).isEqualTo(pageSize);
+        for (int i = 0; i < pageSize; i++) {
             assertThat(firstPage.getContent().get(i)).isEqualTo(questions.get(questions.size() - 1 - i));
         }
     }

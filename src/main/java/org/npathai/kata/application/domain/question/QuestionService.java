@@ -1,6 +1,7 @@
 package org.npathai.kata.application.domain.question;
 
 import org.npathai.kata.application.domain.question.dto.Question;
+import org.npathai.kata.application.domain.question.dto.QuestionPage;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.services.IdGenerator;
@@ -82,5 +83,9 @@ public class QuestionService {
             tagRepository.save(tag);
         }
         return createdTags;
+    }
+
+    public QuestionPage getRecentQuestions() {
+        throw new UnsupportedOperationException();
     }
 }
