@@ -111,8 +111,6 @@ public class QuestionVotingFeatureShould extends AcceptanceTestBase {
     public void notDropOriginalPosterReputationBelowOneOnDownVote() {
         Question newUserQuestion = questionDsl.aQuestion()
                 .byUser(NEW_USER_ID)
-                .withTags(List.of("first-question"))
-                .withBody("My first question")
                 .exec();
 
         questionDsl.aDownVote()
