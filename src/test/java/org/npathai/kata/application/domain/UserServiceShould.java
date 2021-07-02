@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -20,6 +22,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.npathai.kata.application.domain.user.UserBuilder.anUser;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceShould {
@@ -87,14 +90,45 @@ class UserServiceShould {
         assertThat(userService.getUserById(UserId.validated(USER_ID))).isSameAs(user);
     }
 
-    @Test
+    @ParameterizedTest
     @SneakyThrows
-    public void updateTheUser() {
-        User user = new User();
-        user.setId(USER_ID);
+    @ValueSource(ints = {
+            1,
+            2,
+            100
+    })
+    public void updateTheUser(int reputation) {
+        User user = anUser().withReputation(reputation).build();
 
         userService.update(user);
 
         verify(userRepository).save(user);
+    }
+
+    @ParameterizedTest
+    @SneakyThrows
+    @ValueSource(ints = {
+            0,
+            -1,
+            -2
+    })
+    public void nowAllowUserReputationToGoBelowOne(int reputation) {
+        User user = anUser()
+                .withId("1")
+                .withUsername("1")
+                .withEmail("user@domain.com")
+                .withReputation(reputation)
+                .build();
+
+        User expectedUser = anUser()
+                .withId("1")
+                .withUsername("1")
+                .withEmail("user@domain.com")
+                .withReputation(1)
+                .build();
+
+        userService.update(user);
+
+        verify(userRepository).save(expectedUser);
     }
 }
