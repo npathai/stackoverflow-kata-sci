@@ -21,3 +21,11 @@ values ('5', 0, 0, 'ron@gmail.com', 3000, 'ron');
 INSERT INTO users
 (id, cast_down_votes, cast_up_votes, email, reputation, username)
 values ('6', 0, 0, 'voldemort@gmail.com', 3, 'voldemort');
+
+INSERT INTO users
+(id, cast_down_votes, cast_up_votes, email, reputation, username)
+values ('7', 0, 0, 'hagrid@gmail.com', 14, 'hagrid');
+
+INSERT INTO users
+(id, cast_down_votes, cast_up_votes, email, reputation, username)
+values ('8', 0, 0, 'phoenix@gmail.com', 124, 'hagrid');
