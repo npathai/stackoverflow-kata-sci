@@ -12,6 +12,8 @@ import org.npathai.kata.application.domain.services.UnknownEntityException;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.UserId;
+import org.npathai.kata.application.domain.vote.VoteRequest;
+import org.npathai.kata.application.domain.vote.dto.Score;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -127,5 +129,8 @@ public class QuestionService {
         Question question = questionRepository.findById(questionId.getId())
                 .orElseThrow(UnknownEntityException::new);
         return question;
+    }
+    public Score voteQuestion(UserId validated, QuestionId validated1, VoteRequest up) {
+        throw new UnsupportedOperationException();
     }
 }

@@ -8,6 +8,9 @@ public class VoteRequest {
         this.type = type;
     }
 
+    public VoteType getType() {
+        return type;
+    }
 
     public static VoteRequest valid(VoteType type) {
         return new VoteRequest(type);

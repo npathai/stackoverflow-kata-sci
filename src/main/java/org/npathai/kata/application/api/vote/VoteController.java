@@ -6,8 +6,10 @@ import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.vote.dto.Score;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+@RestController
+@RequestMapping("api/v1/q")
 public class VoteController {
 
     private final QuestionService questionService;
@@ -18,7 +20,9 @@ public class VoteController {
         this.validator = validator;
     }
 
-    public ResponseEntity<Score> voteQuestion(String userId, String questionId, VoteRequestPayload payload) {
+    @PostMapping("/{questionId}/votes")
+    public ResponseEntity<Score> voteQuestion(@RequestHeader String userId, @PathVariable String questionId,
+                                              @RequestBody VoteRequestPayload payload) {
         try {
             Score score = questionService.voteQuestion(UserId.validated(userId), QuestionId.validated(questionId),
                     validator.validate(payload));
