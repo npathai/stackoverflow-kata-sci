@@ -50,4 +50,13 @@ public class RegisterUserFeatureShould extends AcceptanceTestBase {
 
         assertThat(user.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
+
+    @AcceptanceTest
+    @DisplayName("return user by id")
+    public void returnUserById() {
+        User userById = userDsl.getUserById(this.user.getId())
+                .exec();
+
+        assertThat(userById).isEqualTo(user);
+    }
 }
