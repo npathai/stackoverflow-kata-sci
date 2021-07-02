@@ -1,11 +1,16 @@
 package org.npathai.kata.application.api.user;
 
+import lombok.SneakyThrows;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
+import org.npathai.kata.application.domain.services.UnknownEntityException;
+import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.user.UserService;
 import org.npathai.kata.application.domain.user.dto.User;
 import org.npathai.kata.application.domain.user.request.RegisterUserRequest;
@@ -61,6 +66,45 @@ public class UserControllerShould {
                 .isEqualTo(HttpStatus.BAD_REQUEST);
 
         verifyNoInteractions(userService);
+    }
+
+    @Nested
+    public class GetUserByIdShould {
+
+        private User user;
+
+        @BeforeEach
+        public void setUp() {
+            user = aUser();
+        }
+
+        @Test
+        @SneakyThrows
+        public void returnUser() {
+            given(userService.getUserById(UserId.validated(USER_ID))).willReturn(user);
+
+            ResponseEntity<User> response =  userController.getById(USER_ID);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isSameAs(user);
+        }
+
+        @Test
+        @SneakyThrows
+        public void return404NotFoundWhenUserWithIdNotFound() {
+            given(userService.getUserById(UserId.validated(USER_ID))).willThrow(UnknownEntityException.class);
+
+            ResponseEntity<User> response =  userController.getById(USER_ID);
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        public void return400BadRequestWhenUserIdIsInvalid() {
+            ResponseEntity<User> response =  userController.getById("");
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
     }
 
     private RegisterUserRequestPayload aRequestPayload() {
