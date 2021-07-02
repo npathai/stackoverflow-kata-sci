@@ -13,8 +13,6 @@ import org.npathai.kata.acceptance.vote.testview.Score;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Question voting feature should")
@@ -103,7 +101,7 @@ public class QuestionVotingFeatureShould extends AcceptanceTestBase {
                 .execReturningResponseEntity();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(questionDsl.getQuestionById(questionId).exec().getQuestion().getScore()).isEqualTo(0);
+        assertThat(questionDsl.getQuestionById(questionId).exec().getQuestion().getScore()).isEqualTo(1);
     }
 
     @VotingScenarioAcceptanceTest

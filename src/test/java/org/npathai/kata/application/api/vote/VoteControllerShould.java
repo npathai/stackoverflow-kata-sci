@@ -8,6 +8,7 @@ import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
+import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.user.UserId;
@@ -67,6 +68,19 @@ public class VoteControllerShould {
     public void return400BadRequestWhenPayloadIsInvalid() {
         given(validator.validate(payload)).willThrow(BadRequestParametersException.class);
 
+        ResponseEntity<Score> response = voteController.voteQuestion(USER_ID, QUESTION_ID, payload);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    @SneakyThrows
+    public void return400BadRequestWhenOperationIsNotPermitted() {
+        VoteRequest request = VoteRequest.valid(VoteType.UP);
+        given(validator.validate(payload)).willReturn(request);
+        given(questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID), request))
+                .willThrow(ImpermissibleOperationException.class);
+        
         ResponseEntity<Score> response = voteController.voteQuestion(USER_ID, QUESTION_ID, payload);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);

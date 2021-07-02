@@ -1,6 +1,8 @@
 package org.npathai.kata.application.domain.question;
 
 import lombok.SneakyThrows;
+import org.npathai.kata.application.api.validation.BadRequestParametersException;
+import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
@@ -139,11 +141,15 @@ public class QuestionService {
                 .orElseThrow(UnknownEntityException::new);
     }
 
-    @SneakyThrows
-    public Score voteQuestion(UserId userId, QuestionId questionId, VoteRequest voteRequest) {
+    public Score voteQuestion(UserId userId, QuestionId questionId, VoteRequest voteRequest) throws
+            BadRequestParametersException, ImpermissibleOperationException {
         Question question = getQuestionExplosively(questionId);
         User voter = userService.getUserById(userId);
         User author = userService.getUserById(UserId.validated(question.getAuthorId()));
+
+        if (voter.equals(author)) {
+            throw new ImpermissibleOperationException("Can't cast vote on own question");
+        }
 
         Score score = new Score();
         if (voteRequest.getType() == VoteType.UP) {

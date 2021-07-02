@@ -9,6 +9,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
@@ -324,6 +325,7 @@ public class QuestionServiceShould {
         public class OnUpVote {
 
             private Score score;
+            private VoteRequest voteRequest;
 
             @BeforeEach
             @SneakyThrows
@@ -332,7 +334,7 @@ public class QuestionServiceShould {
                 given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
 
                 given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
-                VoteRequest voteRequest = VoteRequest.valid(VoteType.UP);
+                voteRequest = VoteRequest.valid(VoteType.UP);
 
                 score = questionService.voteQuestion(UserId.validated(voter.getId()), QuestionId.validated(QUESTION_ID), voteRequest);
             }
@@ -363,12 +365,20 @@ public class QuestionServiceShould {
                 assertThat(author.getReputation()).isEqualTo(AUTHOR_REPUTATION + 10);
                 verify(userService).update(author);
             }
+
+            @Test
+            @SneakyThrows
+            public void doesNotAllowAuthorToUpVoteOnOwnQuestion() {
+                assertThatThrownBy(() -> questionService.voteQuestion(UserId.validated(author.getId()),
+                        QuestionId.validated(question.getId()), voteRequest)).isInstanceOf(ImpermissibleOperationException.class);
+            }
         }
 
         @Nested
         public class OnDownVote {
 
             private Score score;
+            private VoteRequest voteRequest;
 
             @BeforeEach
             @SneakyThrows
@@ -377,7 +387,7 @@ public class QuestionServiceShould {
                 given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
 
                 given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
-                VoteRequest voteRequest = VoteRequest.valid(VoteType.DOWN);
+                voteRequest = VoteRequest.valid(VoteType.DOWN);
 
                 score = questionService.voteQuestion(UserId.validated(voter.getId()), QuestionId.validated(QUESTION_ID),
                         voteRequest);
@@ -409,6 +419,14 @@ public class QuestionServiceShould {
                 assertThat(author.getReputation()).isEqualTo(AUTHOR_REPUTATION - 5);
                 verify(userService).update(author);
             }
+
+            @Test
+            @SneakyThrows
+            public void doesNotAllowAuthorToDownVoteOnOwnQuestion() {
+                assertThatThrownBy(() -> questionService.voteQuestion(UserId.validated(author.getId()),
+                        QuestionId.validated(question.getId()), voteRequest)).isInstanceOf(ImpermissibleOperationException.class);
+            }
+
         }
 
 

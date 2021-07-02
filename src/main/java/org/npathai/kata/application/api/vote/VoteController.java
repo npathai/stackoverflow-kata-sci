@@ -1,6 +1,7 @@
 package org.npathai.kata.application.api.vote;
 
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
+import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.user.UserId;
@@ -27,7 +28,7 @@ public class VoteController {
             Score score = questionService.voteQuestion(UserId.validated(userId), QuestionId.validated(questionId),
                     validator.validate(payload));
             return ResponseEntity.ok().body(score);
-        } catch (BadRequestParametersException ex) {
+        } catch (BadRequestParametersException | ImpermissibleOperationException ex) {
             return ResponseEntity.badRequest().build();
         }
     }
