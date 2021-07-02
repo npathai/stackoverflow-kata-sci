@@ -41,7 +41,7 @@ public class UserController {
     @GetMapping("/{userId}")
     public ResponseEntity<User> getById(@PathVariable String userId) {
         try {
-            return ResponseEntity.ok(userService.getById(UserId.validated(userId)));
+            return ResponseEntity.ok(userService.getUserById(UserId.validated(userId)));
         } catch (UnknownEntityException ex) {
             return ResponseEntity.notFound().build();
         } catch (BadRequestParametersException ex) {

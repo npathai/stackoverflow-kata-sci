@@ -81,7 +81,7 @@ public class UserControllerShould {
         @Test
         @SneakyThrows
         public void returnUser() {
-            given(userService.getById(UserId.validated(USER_ID))).willReturn(user);
+            given(userService.getUserById(UserId.validated(USER_ID))).willReturn(user);
 
             ResponseEntity<User> response =  userController.getById(USER_ID);
 
@@ -92,7 +92,7 @@ public class UserControllerShould {
         @Test
         @SneakyThrows
         public void return404NotFoundWhenUserWithIdNotFound() {
-            given(userService.getById(UserId.validated(USER_ID))).willThrow(UnknownEntityException.class);
+            given(userService.getUserById(UserId.validated(USER_ID))).willThrow(UnknownEntityException.class);
 
             ResponseEntity<User> response =  userController.getById(USER_ID);
 

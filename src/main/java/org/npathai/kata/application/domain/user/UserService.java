@@ -26,4 +26,12 @@ public class UserService {
         userRepository.save(user);
         return user;
     }
+
+    public User getUserById(UserId userId) {
+        return userRepository.findById(userId.getId()).get();
+    }
+
+    public void update(User user) {
+        userRepository.save(user);
+    }
 }
