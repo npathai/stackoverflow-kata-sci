@@ -22,7 +22,8 @@ public class QuestionVotingFeatureShould extends AcceptanceTestBase {
     public static final String ORIGINAL_POSTER_ID = "2";
     public static final String VOTER_1_ID = "3";
     private static final String VOTER_3_ID = "4";
-    private static final String INSUFFICIENT_REP_VOTER_ID = "6";
+    private static final String INSUFFICIENT_UP_VOTE_REP_VOTER_ID = "7";
+    private static final String INSUFFICIENT_DOWN_VOTE_REP_VOTER_ID = "8";
     private static final String NEW_USER_ID = "6";
 
     private QuestionDsl questionDsl;
@@ -84,7 +85,7 @@ public class QuestionVotingFeatureShould extends AcceptanceTestBase {
     @DisplayName("not allow user with insufficient reputation to cast 👍")
     public void notAllowUserWithInsufficientReputationToUpVote() {
         ResponseEntity<Score> response = questionDsl.anUpVote()
-                .byUser(INSUFFICIENT_REP_VOTER_ID)
+                .byUser(INSUFFICIENT_UP_VOTE_REP_VOTER_ID)
                 .onQuestion(questionId)
                 .execReturningResponseEntity();
 
@@ -94,9 +95,9 @@ public class QuestionVotingFeatureShould extends AcceptanceTestBase {
 
     @VotingScenarioAcceptanceTest
     @DisplayName("not allow user with insufficient reputation to cast 👎")
-    public void notAllowUserWithInsufficientReputationToVote() {
+    public void notAllowUserWithInsufficientReputationToDownVote() {
         ResponseEntity<Score> response = questionDsl.aDownVote()
-                .byUser(INSUFFICIENT_REP_VOTER_ID)
+                .byUser(INSUFFICIENT_DOWN_VOTE_REP_VOTER_ID)
                 .onQuestion(questionId)
                 .execReturningResponseEntity();
 
