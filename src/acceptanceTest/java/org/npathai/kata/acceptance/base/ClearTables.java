@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Sql({"classpath:data/clearAll.sql"})
+@Sql(value = {"/data/clearAll.sql"}, executionPhase = Sql.ExecutionPhase.AFTER_TEST_METHOD)
 public @interface ClearTables {
 
 }

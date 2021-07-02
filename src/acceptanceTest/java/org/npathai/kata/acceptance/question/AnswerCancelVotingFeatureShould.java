@@ -8,7 +8,7 @@ import org.npathai.kata.acceptance.question.dsl.AnswerDsl;
 import org.npathai.kata.acceptance.question.dsl.QuestionDsl;
 import org.npathai.kata.acceptance.user.dsl.UserDsl;
 import org.npathai.kata.acceptance.user.testview.User;
-import org.npathai.kata.acceptance.vote.PrepareVotingScenario;
+import org.npathai.kata.acceptance.vote.VotingScenarioAcceptanceTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -71,23 +71,20 @@ public class AnswerCancelVotingFeatureShould extends AcceptanceTestBase {
                 .exec();
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("revert score of answer")
     public void revertAnswerScore() {
         assertThat(questionDsl.getQuestionById(questionId).exec().getAnswers().get(0).getScore()).isEqualTo(0);
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("revert revert original poster reputation")
     public void revertOriginalPosterReputation() {
         assertThat(userDsl.getUserById(ORIGINAL_POSTER_ID).exec()
                 .getReputation()).isEqualTo(3000);
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("revert cast 👍 and 👎 count")
     public void revertVoterCastUpVotesAndDownVotesCount() {
         assertVoterVoteCountsUnaffected(VOTER_1_ID);
@@ -95,8 +92,7 @@ public class AnswerCancelVotingFeatureShould extends AcceptanceTestBase {
         assertVoterVoteCountsUnaffected(DOWN_VOTER_ID);
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("revert voter reputation on cancelling 👎")
     public void revertVoterReputationOnCancellingDownVote() {
         User downVoter = userDsl.getUserById(DOWN_VOTER_ID).exec();

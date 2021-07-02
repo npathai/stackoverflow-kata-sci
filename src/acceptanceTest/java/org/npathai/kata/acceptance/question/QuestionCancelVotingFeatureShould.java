@@ -7,7 +7,7 @@ import org.npathai.kata.acceptance.base.AcceptanceTestBase;
 import org.npathai.kata.acceptance.question.dsl.QuestionDsl;
 import org.npathai.kata.acceptance.user.dsl.UserDsl;
 import org.npathai.kata.acceptance.user.testview.User;
-import org.npathai.kata.acceptance.vote.PrepareVotingScenario;
+import org.npathai.kata.acceptance.vote.VotingScenarioAcceptanceTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -63,24 +63,21 @@ public class QuestionCancelVotingFeatureShould extends AcceptanceTestBase {
                 .exec();
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("revert question score")
     public void revertQuestionScore() {
         assertThat(questionDsl.getQuestionById(questionId).exec()
                 .getQuestion().getScore()).isEqualTo(0);
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("revert original poster reputation")
     public void revertOriginalPosterReputation() {
         assertThat(userDsl.getUserById(ORIGINAL_POSTER_ID).exec()
                 .getReputation()).isEqualTo(3000);
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("revert voter cast 👍 and 👎 count")
     public void revertVoterCastUpVotesAndDownVotesCount() {
         assertVoterVoteCountsUnaffected(VOTER_1_ID);

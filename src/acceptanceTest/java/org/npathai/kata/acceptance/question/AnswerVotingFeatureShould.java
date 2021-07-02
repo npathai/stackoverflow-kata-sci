@@ -10,7 +10,7 @@ import org.npathai.kata.acceptance.question.testview.Answer;
 import org.npathai.kata.acceptance.question.testview.QuestionWithAnswers;
 import org.npathai.kata.acceptance.user.dsl.UserDsl;
 import org.npathai.kata.acceptance.user.testview.User;
-import org.npathai.kata.acceptance.vote.PrepareVotingScenario;
+import org.npathai.kata.acceptance.vote.VotingScenarioAcceptanceTest;
 import org.npathai.kata.acceptance.vote.testview.Score;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,8 +65,7 @@ public class AnswerVotingFeatureShould extends AcceptanceTestBase {
                 .exec();
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("update answer score")
     public void updateAnswerScore() {
         QuestionWithAnswers questionWithAnswers = questionDsl
@@ -77,8 +76,7 @@ public class AnswerVotingFeatureShould extends AcceptanceTestBase {
         assertThat(answer.getScore()).isEqualTo(1);
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("update original poster reputation")
     public void updateOriginalPosterReputation() {
         User originalPoster = userDsl.getUserById(ORIGINAL_POSTER_ID).exec();
@@ -86,8 +84,7 @@ public class AnswerVotingFeatureShould extends AcceptanceTestBase {
         assertThat(originalPoster.getReputation()).isEqualTo(3015);
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("update voter cast 👍 and 👎 count")
     public void updateVoterCastUpVotesAndDownVotesCount() {
         assertVoterVoteCount(VOTER_1_ID, 1, 0);
@@ -95,8 +92,7 @@ public class AnswerVotingFeatureShould extends AcceptanceTestBase {
         assertVoterVoteCount(DOWN_VOTER_ID, 0, 1);
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("reduce voter reputation on 👎")
     public void reduceVoterReputationOnDownVote() {
         User downVoter = userDsl.getUserById(DOWN_VOTER_ID).exec();
@@ -104,8 +100,7 @@ public class AnswerVotingFeatureShould extends AcceptanceTestBase {
         assertThat(downVoter.getReputation()).isEqualTo(2999);
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("not allow user with insufficient reputation to cast 👍")
     public void notAllowUserWithInsufficientReputationToVote() {
         ResponseEntity<Score> response = answerDsl.anUpVote()
@@ -117,8 +112,7 @@ public class AnswerVotingFeatureShould extends AcceptanceTestBase {
         assertThat(questionDsl.getQuestionById(questionId).exec().getAnswers().get(0).getScore()).isEqualTo(0);
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("not allow original poster cast 👍 on own answer")
     public void notAllowOriginalPosterToVoteOnOwnAnswer() {
         ResponseEntity<Score> response = answerDsl.anUpVote()
@@ -130,8 +124,7 @@ public class AnswerVotingFeatureShould extends AcceptanceTestBase {
         assertThat(questionDsl.getQuestionById(questionId).exec().getAnswers().get(0).getScore()).isEqualTo(0);
     }
 
-    @AcceptanceTest
-    @PrepareVotingScenario
+    @VotingScenarioAcceptanceTest
     @DisplayName("not drop original poster reputation to drop below 1")
     public void notDropOriginalPosterReputationBelowOneOnDownVote() {
         Answer newUserAnswer = answerDsl.anAnswer()
