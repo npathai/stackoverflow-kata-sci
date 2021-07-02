@@ -1,5 +1,6 @@
 package org.npathai.kata.application.domain;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -8,10 +9,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.domain.services.IdGenerator;
+import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.user.UserService;
 import org.npathai.kata.application.domain.user.dto.User;
 import org.npathai.kata.application.domain.user.persistence.UserRepository;
 import org.npathai.kata.application.domain.user.request.RegisterUserRequest;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -24,7 +28,6 @@ class UserServiceShould {
     public static final String USER_ID = "1";
 
     private RegisterUserRequest registerUserRequest;
-    private User user;
 
     @Mock
     private UserRepository userRepository;
@@ -42,6 +45,7 @@ class UserServiceShould {
 
     @Nested
     public class UserRegistrationShould {
+        private User user;
 
         @BeforeEach
         public void setUp() {
@@ -70,5 +74,27 @@ class UserServiceShould {
         public void saveUserInRepository() {
             verify(userRepository).save(user);
         }
+    }
+
+    @SneakyThrows
+    @Test
+    public void returnUserById() {
+        User user = new User();
+        user.setId(USER_ID);
+
+        given(userRepository.findById(USER_ID)).willReturn(Optional.of(user));
+
+        assertThat(userService.getUserById(UserId.validated(USER_ID))).isSameAs(user);
+    }
+
+    @Test
+    @SneakyThrows
+    public void updateTheUser() {
+        User user = new User();
+        user.setId(USER_ID);
+
+        userService.update(user);
+
+        verify(userRepository).save(user);
     }
 }

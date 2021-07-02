@@ -28,10 +28,10 @@ public class UserService {
     }
 
     public User getUserById(UserId userId) {
-        throw new UnsupportedOperationException();
+        return userRepository.findById(userId.getId()).get();
     }
 
     public void update(User user) {
-        throw new UnsupportedOperationException();
+        userRepository.save(user);
     }
 }

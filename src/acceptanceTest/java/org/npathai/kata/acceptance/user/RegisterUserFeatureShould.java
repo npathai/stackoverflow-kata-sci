@@ -2,10 +2,8 @@ package org.npathai.kata.acceptance.user;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.npathai.kata.acceptance.base.AcceptanceTest;
 import org.npathai.kata.acceptance.base.AcceptanceTestBase;
-import org.npathai.kata.acceptance.base.ClearTables;
 import org.npathai.kata.acceptance.user.dsl.UserDsl;
 import org.npathai.kata.acceptance.user.testview.User;
 import org.springframework.http.HttpStatus;
