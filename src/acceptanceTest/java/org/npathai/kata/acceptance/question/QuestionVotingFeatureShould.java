@@ -83,14 +83,26 @@ public class QuestionVotingFeatureShould extends AcceptanceTestBase {
     }
 
     @VotingScenarioAcceptanceTest
-    @DisplayName("not allow user with insufficient reputation to vote")
-    public void notAllowUserWithInsufficientReputationToVote() {
+    @DisplayName("not allow user with insufficient reputation to cast 👍")
+    public void notAllowUserWithInsufficientReputationToUpVote() {
         ResponseEntity<Score> response = questionDsl.anUpVote()
                 .byUser(INSUFFICIENT_REP_VOTER_ID)
                 .onQuestion(questionId)
                 .execReturningResponseEntity();
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(questionDsl.getQuestionById(questionId).exec().getQuestion().getScore()).isEqualTo(0);
+    }
+
+    @VotingScenarioAcceptanceTest
+    @DisplayName("not allow user with insufficient reputation to cast 👎")
+    public void notAllowUserWithInsufficientReputationToVote() {
+        ResponseEntity<Score> response = questionDsl.aDownVote()
+                .byUser(INSUFFICIENT_REP_VOTER_ID)
+                .onQuestion(questionId)
+                .execReturningResponseEntity();
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         assertThat(questionDsl.getQuestionById(questionId).exec().getQuestion().getScore()).isEqualTo(0);
     }
 
