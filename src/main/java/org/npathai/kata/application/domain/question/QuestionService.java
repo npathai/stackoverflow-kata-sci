@@ -14,6 +14,7 @@ import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.services.UnknownEntityException;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
+import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.user.UserService;
 import org.npathai.kata.application.domain.user.dto.User;
@@ -142,7 +143,7 @@ public class QuestionService {
     }
 
     public Score voteQuestion(UserId userId, QuestionId questionId, VoteRequest voteRequest) throws
-            BadRequestParametersException, ImpermissibleOperationException {
+            BadRequestParametersException, ImpermissibleOperationException, InsufficientReputationException {
         Question question = getQuestionExplosively(questionId);
         User voter = userService.getUserById(userId);
         User author = userService.getUserById(UserId.validated(question.getAuthorId()));
@@ -153,10 +154,17 @@ public class QuestionService {
 
         Score score = new Score();
         if (voteRequest.getType() == VoteType.UP) {
+            if (voter.getReputation() < 15) {
+                throw new InsufficientReputationException();
+            }
+
             score.setScore(question.getScore() + 1);
             voter.setCastUpVotes(voter.getCastUpVotes() + 1);
             author.setReputation(author.getReputation() + 10);
         } else {
+            if (voter.getReputation() < 125) {
+                throw new InsufficientReputationException();
+            }
             voter.setCastDownVotes(voter.getCastDownVotes() + 1);
             score.setScore(question.getScore() - 1);
             author.setReputation(author.getReputation() - 5);

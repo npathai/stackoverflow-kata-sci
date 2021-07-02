@@ -5,10 +5,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
@@ -21,6 +24,7 @@ import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.services.UnknownEntityException;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
+import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.user.UserService;
 import org.npathai.kata.application.domain.user.dto.User;
@@ -312,6 +316,7 @@ public class QuestionServiceShould {
                     .build();
 
             voter = anUser()
+                    .withReputation(1000)
                     .withCastDownVotes(10)
                     .withCastUpVotes(10)
                     .build();
@@ -336,7 +341,7 @@ public class QuestionServiceShould {
                 given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
                 voteRequest = VoteRequest.valid(VoteType.UP);
 
-                score = questionService.voteQuestion(UserId.validated(voter.getId()), QuestionId.validated(QUESTION_ID), voteRequest);
+                score = castUpVote(voter, QUESTION_ID);
             }
 
             @Test
@@ -369,8 +374,41 @@ public class QuestionServiceShould {
             @Test
             @SneakyThrows
             public void doesNotAllowAuthorToUpVoteOnOwnQuestion() {
-                assertThatThrownBy(() -> questionService.voteQuestion(UserId.validated(author.getId()),
-                        QuestionId.validated(question.getId()), voteRequest)).isInstanceOf(ImpermissibleOperationException.class);
+                assertThatThrownBy(() -> castUpVote(author, question.getId())).isInstanceOf(ImpermissibleOperationException.class);
+            }
+
+            @SneakyThrows
+            private Score castUpVote(User voter, String id) {
+                return questionService.voteQuestion(UserId.validated(voter.getId()),
+                        QuestionId.validated(id), voteRequest);
+            }
+
+            @ParameterizedTest
+            @SneakyThrows
+            @ValueSource(ints = {
+                    15,
+                    16,
+                    100
+            })
+            public void allowsUserToVoteAfterSufficientReputation(int reputation) {
+                voter.setReputation(reputation);
+
+                assertThat(questionService.voteQuestion(UserId.validated(voter.getId()),
+                        QuestionId.validated(question.getId()), voteRequest).getScore()).isEqualTo(12);
+            }
+
+            @ParameterizedTest
+            @SneakyThrows
+            @ValueSource(ints = {
+                    1,
+                    13,
+                    14,
+            })
+            public void doesNotAllowUserWithInsufficientReputationToVote(int reputation) {
+                voter.setReputation(reputation);
+
+                assertThatThrownBy(() -> assertThat(questionService.voteQuestion(UserId.validated(voter.getId()),
+                        QuestionId.validated(question.getId()), voteRequest)).isInstanceOf(InsufficientReputationException.class));
             }
         }
 
@@ -385,8 +423,8 @@ public class QuestionServiceShould {
             public void setUp() {
                 given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
                 given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
-
                 given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
+
                 voteRequest = VoteRequest.valid(VoteType.DOWN);
 
                 score = questionService.voteQuestion(UserId.validated(voter.getId()), QuestionId.validated(QUESTION_ID),
@@ -427,8 +465,35 @@ public class QuestionServiceShould {
                         QuestionId.validated(question.getId()), voteRequest)).isInstanceOf(ImpermissibleOperationException.class);
             }
 
-        }
+            @ParameterizedTest
+            @SneakyThrows
+            @ValueSource(ints = {
+                    125,
+                    126,
+                    1000
+            })
+            public void allowsUserToVoteAfterSufficientReputation(int reputation) {
+                voter.setReputation(reputation);
 
+                assertThat(questionService.voteQuestion(UserId.validated(voter.getId()),
+                        QuestionId.validated(question.getId()), voteRequest).getScore()).isEqualTo(8);
+            }
+
+            @ParameterizedTest
+            @SneakyThrows
+            @ValueSource(ints = {
+                    1,
+                    100,
+                    124
+            })
+            public void doesNotAllowUserWithInsufficientReputationToVote(int reputation) {
+                voter.setReputation(reputation);
+
+                assertThatThrownBy(() -> assertThat(questionService.voteQuestion(UserId.validated(voter.getId()),
+                        QuestionId.validated(question.getId()), voteRequest)).isInstanceOf(InsufficientReputationException.class));
+            }
+
+        }
 
         @Test
         @SneakyThrows

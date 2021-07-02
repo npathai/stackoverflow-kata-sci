@@ -4,8 +4,10 @@ import org.npathai.kata.application.api.validation.BadRequestParametersException
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.QuestionService;
+import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.vote.dto.Score;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +32,8 @@ public class VoteController {
             return ResponseEntity.ok().body(score);
         } catch (BadRequestParametersException | ImpermissibleOperationException ex) {
             return ResponseEntity.badRequest().build();
+        } catch (InsufficientReputationException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 }
