@@ -26,4 +26,12 @@ public class UserService {
         userRepository.save(user);
         return user;
     }
+
+    public User getUserById(UserId userId) {
+        throw new UnsupportedOperationException();
+    }
+
+    public void update(User user) {
+        throw new UnsupportedOperationException();
+    }
 }

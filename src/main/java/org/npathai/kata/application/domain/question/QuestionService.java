@@ -12,7 +12,10 @@ import org.npathai.kata.application.domain.services.UnknownEntityException;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.UserId;
+import org.npathai.kata.application.domain.user.UserService;
+import org.npathai.kata.application.domain.user.dto.User;
 import org.npathai.kata.application.domain.vote.VoteRequest;
+import org.npathai.kata.application.domain.vote.VoteType;
 import org.npathai.kata.application.domain.vote.dto.Score;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,14 +33,16 @@ public class QuestionService {
     private final IdGenerator questionIdGenerator;
     private final IdGenerator tagIdGenerator;
     private final IdGenerator answerIdGenerator;
+    private final UserService userService;
     private final Clock clock;
 
     public QuestionService(TagRepository tagRepository, QuestionRepository questionRepository,
-                           AnswerRepository answerRepository, IdGenerator questionIdGenerator,
+                           AnswerRepository answerRepository, UserService userService, IdGenerator questionIdGenerator,
                            IdGenerator tagIdGenerator, IdGenerator answerIdGenerator, Clock clock) {
         this.tagRepository = tagRepository;
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
+        this.userService = userService;
         this.questionIdGenerator = questionIdGenerator;
         this.tagIdGenerator = tagIdGenerator;
         this.answerIdGenerator = answerIdGenerator;
@@ -130,7 +135,24 @@ public class QuestionService {
                 .orElseThrow(UnknownEntityException::new);
         return question;
     }
-    public Score voteQuestion(UserId validated, QuestionId validated1, VoteRequest up) {
-        throw new UnsupportedOperationException();
+
+    public Score voteQuestion(UserId userId, QuestionId questionId, VoteRequest voteRequest) {
+        Question question = getQuestionExplosively(questionId);
+        User voter = userService.getUserById(userId);
+
+        Score score = new Score();
+        if (voteRequest.getType() == VoteType.UP) {
+            score.setScore(question.getScore() + 1);
+            voter.setCastUpVotes(voter.getCastUpVotes() + 1);
+        } else {
+            voter.setCastDownVotes(voter.getCastDownVotes() + 1);
+            score.setScore(question.getScore() - 1);
+        }
+
+        userService.update(voter);
+        question.setScore(score.getScore());
+        questionRepository.save(question);
+
+        return score;
     }
 }

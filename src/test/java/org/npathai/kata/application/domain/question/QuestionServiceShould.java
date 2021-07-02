@@ -21,6 +21,11 @@ import org.npathai.kata.application.domain.services.UnknownEntityException;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.UserId;
+import org.npathai.kata.application.domain.user.UserService;
+import org.npathai.kata.application.domain.user.dto.User;
+import org.npathai.kata.application.domain.vote.VoteRequest;
+import org.npathai.kata.application.domain.vote.VoteType;
+import org.npathai.kata.application.domain.vote.dto.Score;
 import org.springframework.data.domain.*;
 
 import java.time.Clock;
@@ -37,7 +42,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class QuestionServiceShould {
+public class QuestionServiceShould {
     private static final String USER_ID = "U1";
     private static final String QUESTION_ID = "Q1";
     private static final String QUESTION_TITLE = "First Question";
@@ -56,6 +61,9 @@ class QuestionServiceShould {
     AnswerRepository answerRepository;
 
     @Mock
+    UserService userService;
+
+    @Mock
     IdGenerator questionIdGenerator;
 
     @Mock
@@ -65,6 +73,7 @@ class QuestionServiceShould {
     IdGenerator answerIdGenerator;
 
     Clock clock;
+
     QuestionService questionService;
 
     PostQuestionRequest request;
@@ -73,7 +82,7 @@ class QuestionServiceShould {
     public void setUp() {
         clock = fixedClock();
         questionService = new QuestionService(tagRepository, questionRepository,
-                answerRepository, questionIdGenerator, tagIdGenerator, answerIdGenerator, clock);
+                answerRepository, userService, questionIdGenerator, tagIdGenerator, answerIdGenerator, clock);
         request = PostQuestionRequest.valid(QUESTION_TITLE, QUESTION_BODY, QUESTION_TAGS);
     }
 
@@ -136,7 +145,7 @@ class QuestionServiceShould {
 
             assertThat(question.getCreatedAt()).isEqualTo(clock.millis());
         }
-        
+
         @Test
         public void savesQuestionToRepository() {
             postQuestion();
@@ -231,7 +240,7 @@ class QuestionServiceShould {
             Answer postedAnswer = questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
             assertThat(postedAnswer).isEqualTo(answer);
         }
-        
+
         @Test
         @SneakyThrows
         public void saveAnswerToRepository() {
@@ -256,7 +265,7 @@ class QuestionServiceShould {
         @Test
         @SneakyThrows
         public void returnQuestionWithAnswers() {
-            Question question  = aQuestion(QUESTION_ID);
+            Question question = aQuestion(QUESTION_ID);
 
             Answer answer = new Answer();
             answer.setId(ANSWER_ID);
@@ -271,7 +280,7 @@ class QuestionServiceShould {
             given(questionRepository.findById(QUESTION_ID)).willReturn(Optional.of(question));
             given(answerRepository.findByQuestionId(QUESTION_ID)).willReturn(List.of(answer));
 
-            QuestionWithAnswers  questionWithAnswers = questionService.getQuestion(QuestionId.validated(QUESTION_ID));
+            QuestionWithAnswers questionWithAnswers = questionService.getQuestion(QuestionId.validated(QUESTION_ID));
 
             assertThat(questionWithAnswers).isEqualTo(expected);
         }
@@ -281,7 +290,120 @@ class QuestionServiceShould {
             assertThatThrownBy(() -> questionService.getQuestion(QuestionId.validated("unknown")))
                     .isInstanceOf(UnknownEntityException.class);
         }
+    }
 
+    @Nested
+    public class QuestionVotingShould {
+
+        private Question question;
+        private User user;
+
+        @BeforeEach
+        @SneakyThrows
+        public void setUp() {
+            question = aQuestion(QUESTION_ID);
+            question.setScore(10);
+            user = aUser();
+            user.setCastUpVotes(10);
+            user.setCastDownVotes(10);
+
+        }
+
+        @Nested
+        public class OnUpVote {
+
+            private VoteRequest voteRequest;
+
+            @BeforeEach
+            @SneakyThrows
+            public void setUp() {
+                given(userService.getUserById(UserId.validated(USER_ID))).willReturn(user);
+                given(questionRepository.findById(QUESTION_ID)).willReturn(Optional.of(question));
+                voteRequest = VoteRequest.valid(VoteType.UP);
+            }
+
+            @Test
+            @SneakyThrows
+            public void returnIncrementedScore() {
+                Score score = questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID), voteRequest);
+                assertThat(score.getScore()).isEqualTo(11);
+            }
+
+            @Test
+            @SneakyThrows
+            public void incrementUpVoteCastCountOfVoter() {
+                questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID), voteRequest);
+
+                assertThat(user.getCastUpVotes()).isEqualTo(11);
+                verify(userService).update(user);
+            }
+
+            @Test
+            @SneakyThrows
+            public void incrementsScoreOfQuestion() {
+                questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID), voteRequest);
+
+                assertThat(question.getScore()).isEqualTo(11);
+                verify(questionRepository).save(question);
+            }
+
+        }
+
+        @Nested
+        public class OnDownVote {
+
+            private VoteRequest voteRequest;
+
+            @BeforeEach
+            @SneakyThrows
+            public void setUp() {
+                given(userService.getUserById(UserId.validated(USER_ID))).willReturn(user);
+                given(questionRepository.findById(QUESTION_ID)).willReturn(Optional.of(question));
+                voteRequest = VoteRequest.valid(VoteType.DOWN);
+            }
+
+            @Test
+            @SneakyThrows
+            public void returnsDecrementedScoreOfQuestion() {
+                Score score = questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID),
+                        voteRequest);
+
+                assertThat(score.getScore()).isEqualTo(9);
+            }
+
+            @Test
+            @SneakyThrows
+            public void incrementsCountOfDownVotesCastOfVoter() {
+                questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID), voteRequest);
+
+                assertThat(user.getCastDownVotes()).isEqualTo(11);
+                verify(userService).update(user);
+            }
+
+            @Test
+            @SneakyThrows
+            public void saveQuestionWithUpdatedScore() {
+                questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID), voteRequest);
+                assertThat(question.getScore()).isEqualTo(9);
+                verify(questionRepository).save(question);
+            }
+        }
+
+
+        @Test
+        @SneakyThrows
+        public void throwsUnknownEntityExceptionWhenQuestionWithIdNotFound() {
+            VoteRequest voteRequest = VoteRequest.valid(VoteType.DOWN);
+
+            assertThatThrownBy(() -> questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated("unknown"), voteRequest))
+                    .isInstanceOf(UnknownEntityException.class);
+        }
+    }
+
+    private User aUser() {
+        User user = new User();
+        user.setId(USER_ID);
+        return user;
     }
 
     private Question aQuestion(String id) {

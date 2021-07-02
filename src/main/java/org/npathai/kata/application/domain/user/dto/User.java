@@ -17,4 +17,6 @@ public class User {
     private String username;
     private String email;
     private long reputation;
+    private int castUpVotes;
+    private int castDownVotes;
 }
