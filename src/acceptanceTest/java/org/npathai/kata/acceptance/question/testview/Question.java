@@ -14,4 +14,5 @@ public class Question {
     private String createdAt;
     private String authorId;
     private int answerCount;
+    private int score;
 }

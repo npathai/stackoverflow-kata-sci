@@ -8,4 +8,5 @@ public class Answer {
     private String authorId;
     private String questionId;
     private String body;
+    private int score;
 }

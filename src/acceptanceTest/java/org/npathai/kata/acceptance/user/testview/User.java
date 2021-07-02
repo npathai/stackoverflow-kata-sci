@@ -8,4 +8,6 @@ public class User {
     private String username;
     private String email;
     private int reputation;
+    private int castUpVotes;
+    private int castDownVotes;
 }

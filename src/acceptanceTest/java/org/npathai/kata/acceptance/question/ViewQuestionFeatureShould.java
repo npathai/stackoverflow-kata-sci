@@ -1,9 +1,12 @@
 package org.npathai.kata.acceptance.question;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.npathai.kata.acceptance.base.AcceptanceTest;
 import org.npathai.kata.acceptance.base.AcceptanceTestBase;
 import org.npathai.kata.acceptance.base.ClearTables;
+import org.npathai.kata.acceptance.question.dsl.AnswerDsl;
 import org.npathai.kata.acceptance.question.dsl.QuestionDsl;
 import org.npathai.kata.acceptance.question.testview.QuestionWithAnswers;
 import org.npathai.kata.acceptance.tag.testview.Tag;
@@ -15,10 +18,11 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DisplayName("View question feature should")
 public class ViewQuestionFeatureShould extends AcceptanceTestBase {
 
-    private UserDsl userDsl;
     private QuestionDsl questionDsl;
+    private AnswerDsl answerDsl;
     private String opId;
     private String questionId;
     private String answerer1Id;
@@ -26,8 +30,10 @@ public class ViewQuestionFeatureShould extends AcceptanceTestBase {
 
     @BeforeEach
     public void setUp() {
-        userDsl = new UserDsl(restTemplate);
+        UserDsl userDsl = new UserDsl(restTemplate);
         questionDsl = new QuestionDsl(restTemplate);
+        answerDsl = new AnswerDsl(restTemplate);
+
         opId = userDsl.registerUser()
                 .withUsername("jon.skeet")
                 .withEmail("jon.skeet@gmail.com")
@@ -51,10 +57,10 @@ public class ViewQuestionFeatureShould extends AcceptanceTestBase {
                 .exec().getId();
     }
 
-    @ClearTables
-    @Test
+    @AcceptanceTest
+    @DisplayName("return question without answers when unanswered")
     public void returnQuestionWithoutAnswersWhenUnanswered() {
-        QuestionWithAnswers questionWithAnswers = questionDsl.view(questionId).exec();
+        QuestionWithAnswers questionWithAnswers = questionDsl.getQuestionById(questionId).exec();
 
         assertThat(questionWithAnswers.getQuestion()).satisfies(q -> {
             assertThat(q.getId()).isNotBlank();
@@ -67,22 +73,22 @@ public class ViewQuestionFeatureShould extends AcceptanceTestBase {
         assertThat(questionWithAnswers.getAnswers()).isEmpty();
     }
 
-    @ClearTables
-    @Test
+    @AcceptanceTest
+    @DisplayName("return question with all answers")
     public void returnQuestionWithAllAnswers() {
-        String answer1Id = questionDsl.anAnswer()
+        String answer1Id = answerDsl.anAnswer()
                 .byUser(answerer1Id)
                 .onQuestion(questionId)
                 .withBody("This is answer 1")
                 .exec().getId();
 
-        String answer2Id = questionDsl.anAnswer()
+        String answer2Id = answerDsl.anAnswer()
                 .byUser(answerer2Id)
                 .onQuestion(questionId)
                 .withBody("This is answer 2")
                 .exec().getId();
 
-        QuestionWithAnswers questionWithAnswers = questionDsl.view(questionId).exec();
+        QuestionWithAnswers questionWithAnswers = questionDsl.getQuestionById(questionId).exec();
 
         assertThat(questionWithAnswers.getQuestion()).satisfies(q -> {
             assertThat(q.getId()).isNotBlank();
@@ -108,10 +114,10 @@ public class ViewQuestionFeatureShould extends AcceptanceTestBase {
         });
     }
 
-    @ClearTables
-    @Test
+    @AcceptanceTest
+    @DisplayName("return 404 NOT_FOUND when question is not found")
     public void return404NotFoundStatusCodeWhenQuestionIsNotFound() {
-        ResponseEntity<QuestionWithAnswers> response = questionDsl.view("unknown")
+        ResponseEntity<QuestionWithAnswers> response = questionDsl.getQuestionById("unknown")
                 .execReturningResponseEntity();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);

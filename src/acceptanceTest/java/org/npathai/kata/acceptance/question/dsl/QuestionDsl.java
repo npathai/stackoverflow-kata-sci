@@ -2,19 +2,21 @@ package org.npathai.kata.acceptance.question.dsl;
 
 import org.npathai.kata.acceptance.base.testview.Page;
 import org.npathai.kata.acceptance.question.testview.*;
-import org.npathai.kata.acceptance.tag.testview.Tag;
+import org.npathai.kata.acceptance.vote.testview.Score;
+import org.npathai.kata.acceptance.vote.testview.VoteRequest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 
 import java.util.List;
+import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class QuestionDsl {
-    private static final String QUESTION_BASE_URL = "/api/v1/q";
-    private static final String RECENT_QUESTIONS_URL = QUESTION_BASE_URL + "/recent";
-    private static final String GET_QUESTION_URL_TEMPLATE = QUESTION_BASE_URL + "/%s";
+    static final String QUESTION_BASE_URL = "/api/v1/q";
+    static final String RECENT_QUESTIONS_URL = QUESTION_BASE_URL + "/recent";
+    static final String GET_QUESTION_URL_TEMPLATE = QUESTION_BASE_URL + "/%s";
 
     private final TestRestTemplate restTemplate;
 
@@ -28,7 +30,15 @@ public class QuestionDsl {
 
     public class PostQuestionCommand {
         private final CreateQuestionRequest request = new CreateQuestionRequest();
+        private final Random random = new Random();
+
         private String userId;
+
+        PostQuestionCommand() {
+            request.setTitle("A title: " + random.nextInt());
+            request.setBody("A body: " + random.nextInt());
+            request.setTags(List.of("java", "kata"));
+        }
 
         public PostQuestionCommand byUser(String userId) {
             this.userId = userId;
@@ -87,7 +97,7 @@ public class QuestionDsl {
         }
     }
 
-    public GetQuestionCommand view(String id) {
+    public GetQuestionCommand getQuestionById(String id) {
         return new GetQuestionCommand(id);
     }
 
@@ -117,51 +127,90 @@ public class QuestionDsl {
         }
     }
 
-    public PostAnswerCommand anAnswer() {
-        return new PostAnswerCommand();
+    public VoteCommand aVote(String type) {
+        return new VoteCommand(type);
     }
 
-    public class PostAnswerCommand {
+    public VoteCommand anUpVote() {
+        return new VoteCommand("up");
+    }
 
+    public VoteCommand aDownVote() {
+        return new VoteCommand("down");
+    }
+
+    public class VoteCommand {
+        private final VoteRequest voteRequest = new VoteRequest();
         private String questionId;
-        private PostAnswerRequest postAnswerRequest = new PostAnswerRequest();
         private String userId;
 
-        public PostAnswerCommand byUser(String userId) {
+        public VoteCommand(String type) {
+            voteRequest.setType(type);
+        }
+
+        public VoteCommand byUser(String userId) {
             this.userId = userId;
             return this;
         }
 
-        public PostAnswerCommand onQuestion(String questionId) {
+        public VoteCommand onQuestion(String questionId) {
             this.questionId = questionId;
             return this;
         }
 
-        public PostAnswerCommand withBody(String body) {
-            postAnswerRequest.setBody(body);
-            return this;
+        public Score exec() {
+            ResponseEntity<Score> response = execReturningResponseEntity();
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+
+            return response.getBody();
         }
 
-        public Answer exec() {
+        public ResponseEntity<Score> execReturningResponseEntity() {
             HttpHeaders headers = new HttpHeaders();
             headers.add("userId", userId);
 
-            HttpEntity<PostAnswerRequest> request = new HttpEntity<>(postAnswerRequest, headers);
+            HttpEntity<VoteRequest> request = new HttpEntity<>(voteRequest, headers);
 
-            ResponseEntity<Answer> response = restTemplate.exchange(QUESTION_BASE_URL + "/" + questionId + "/a", HttpMethod.POST,
+            return restTemplate.exchange(QUESTION_BASE_URL + "/" + questionId + "/votes", HttpMethod.POST,
+                    request, new ParameterizedTypeReference<>() {});
+        }
+    }
+
+    public CancelVoteCommand cancelVote() {
+        return new CancelVoteCommand();
+    }
+
+    public class CancelVoteCommand {
+
+        VoteRequest voteRequest = new VoteRequest();
+        private String questionId;
+        private String userId;
+
+        public CancelVoteCommand byUser(String userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public CancelVoteCommand onQuestion(String questionId) {
+            this.questionId = questionId;
+            return this;
+        }
+
+        public Score exec() {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("userId", userId);
+
+            HttpEntity<VoteRequest> request = new HttpEntity<>(voteRequest, headers);
+
+            ResponseEntity<Score> response = restTemplate.exchange(QUESTION_BASE_URL + "/" + questionId + "/votes", HttpMethod.DELETE,
                     request, new ParameterizedTypeReference<>() {});
 
-            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-            assertThat(response.getBody()).isNotNull()
-                .satisfies(answer -> {
-                    assertThat(answer.getId()).isNotNull();
-                    assertThat(answer.getAuthorId()).isEqualTo(userId);
-                    assertThat(answer.getQuestionId()).isEqualTo(questionId);
-                    assertThat(answer.getBody()).isEqualTo(postAnswerRequest.getBody());
-                });
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
 
             return response.getBody();
         }
     }
-
 }

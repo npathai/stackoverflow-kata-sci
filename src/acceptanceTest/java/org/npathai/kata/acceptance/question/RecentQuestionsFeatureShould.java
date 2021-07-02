@@ -1,10 +1,11 @@
 package org.npathai.kata.acceptance.question;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import org.npathai.kata.acceptance.base.AcceptanceTest;
 import org.npathai.kata.acceptance.base.AcceptanceTestBase;
-import org.npathai.kata.acceptance.base.ClearTables;
 import org.npathai.kata.acceptance.base.testview.Page;
+import org.npathai.kata.acceptance.question.dsl.AnswerDsl;
 import org.npathai.kata.acceptance.question.dsl.QuestionDsl;
 import org.npathai.kata.acceptance.question.testview.Question;
 import org.npathai.kata.acceptance.tag.testview.Tag;
@@ -16,16 +17,18 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@DisplayName("Recent questions feature should")
 public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
 
     private QuestionDsl questionDsl;
     private String opId;
-    private UserDsl userDsl;
 
     @BeforeEach
     public void setUp() {
-        userDsl = new UserDsl(restTemplate);
+        UserDsl userDsl = new UserDsl(restTemplate);
         questionDsl = new QuestionDsl(restTemplate);
+        AnswerDsl answerDsl = new AnswerDsl(restTemplate);
+
         opId = userDsl.registerUser()
                 .withUsername("jon.skeet")
                 .withEmail("jon.skeet@gmail.com")
@@ -48,21 +51,21 @@ public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
                 .withTags(List.of("java"))
                 .exec().getId();
 
-        questionDsl.anAnswer()
+        answerDsl.anAnswer()
                 .byUser(answerer1)
                 .onQuestion(questionId)
                 .withBody("Answer Body 1")
                 .exec();
 
-        questionDsl.anAnswer()
+        answerDsl.anAnswer()
                 .byUser(answerer2)
                 .onQuestion(questionId)
                 .withBody("Answer Body 2")
                 .exec();
     }
 
-    @ClearTables
-    @Test
+    @AcceptanceTest
+    @DisplayName("return basic information of question")
     public void returnBasicQuestionInformation() {
         Page<Question> questionPage = questionDsl.recent().exec();
         assertThat(questionPage.getContent().get(0))
@@ -76,9 +79,9 @@ public class RecentQuestionsFeatureShould extends AcceptanceTestBase {
                 });
     }
 
-    @ClearTables
-    @Test
-    public void returnFirstTenQuestionsSortedByDescendingOrderOfTimeOfCreation() {
+    @AcceptanceTest
+    @DisplayName("return first 10 questions sorted in descending order of creation time")
+    public void returnFirstTenQuestionsSortedByDescendingOrderOfCreationTime() {
         List<Question> questions = IntStream.range(0, 20)
                 .mapToObj(this::postQuestion)
                 .collect(Collectors.toList());

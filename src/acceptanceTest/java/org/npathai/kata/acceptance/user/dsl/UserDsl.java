@@ -9,6 +9,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.Random;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UserDsl {
@@ -22,6 +24,12 @@ public class UserDsl {
 
     public class CreateUserCommand {
         CreateUserRequest request = new CreateUserRequest();
+        Random random = new Random();
+
+        CreateUserCommand() {
+            request.setUsername("User" + random.nextInt());
+            request.setEmail(request.getUsername() + "@domain.com");
+        }
 
         public CreateUserCommand withUsername(String username) {
             request.setUsername(username);
@@ -51,5 +59,30 @@ public class UserDsl {
 
     public CreateUserCommand registerUser() {
         return new CreateUserCommand();
+    }
+
+    public class GetUserByIdCommand {
+        private final String userId;
+
+        public GetUserByIdCommand(String userId) {
+            this.userId = userId;
+        }
+
+        public User exec() {
+            HttpEntity<Void> request = new HttpEntity<>(null);
+
+            ResponseEntity<User> response = restTemplate.exchange(USER_BASE_URL + "/" + userId,
+                    HttpMethod.GET,
+                    request, new ParameterizedTypeReference<>() {});
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+
+            return response.getBody();
+        }
+    }
+
+    public GetUserByIdCommand getUserById(String id) {
+        return new GetUserByIdCommand(id);
     }
 }
