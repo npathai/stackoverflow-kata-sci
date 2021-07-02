@@ -40,6 +40,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.npathai.kata.application.domain.user.UserBuilder.anUser;
+import static org.npathai.kata.application.domain.tag.TagBuilder.aTag;
 
 @ExtendWith(MockitoExtension.class)
 public class QuestionServiceShould {
@@ -183,8 +185,9 @@ public class QuestionServiceShould {
 
         @BeforeEach
         public void setUp() {
-            questions = List.of(aQuestion("1"),
-                    aQuestion("2")
+            questions = List.of(
+                    aQuestion("1").build(),
+                    aQuestion("2").build()
             );
 
             questionPage = new PageImpl<>(this.questions);
@@ -224,7 +227,7 @@ public class QuestionServiceShould {
             postAnswerRequest = PostAnswerRequest.valid("Body");
             given(answerIdGenerator.get()).willReturn(ANSWER_ID);
 
-            question = aQuestion(QUESTION_ID);
+            question = aQuestion(QUESTION_ID).build();
             given(questionRepository.findById(QUESTION_ID)).willReturn(Optional.of(question));
 
             answer = new Answer();
@@ -265,7 +268,7 @@ public class QuestionServiceShould {
         @Test
         @SneakyThrows
         public void returnQuestionWithAnswers() {
-            Question question = aQuestion(QUESTION_ID);
+            Question question = aQuestion(QUESTION_ID).build();
 
             Answer answer = new Answer();
             answer.setId(ANSWER_ID);
@@ -294,98 +297,117 @@ public class QuestionServiceShould {
 
     @Nested
     public class QuestionVotingShould {
+        private static final long AUTHOR_REPUTATION = 1000;
 
         private Question question;
-        private User user;
+        private User author;
+        private User voter;
 
         @BeforeEach
         @SneakyThrows
         public void setUp() {
-            question = aQuestion(QUESTION_ID);
-            question.setScore(10);
-            user = aUser();
-            user.setCastUpVotes(10);
-            user.setCastDownVotes(10);
+            author = anUser()
+                    .withReputation(AUTHOR_REPUTATION)
+                    .build();
 
+            voter = anUser()
+                    .withCastDownVotes(10)
+                    .withCastUpVotes(10)
+                    .build();
+
+            question = aQuestion(QUESTION_ID)
+                    .withAuthorId(author.getId())
+                    .withScore(10).build();
         }
 
         @Nested
         public class OnUpVote {
 
-            private VoteRequest voteRequest;
+            private Score score;
 
             @BeforeEach
             @SneakyThrows
             public void setUp() {
-                given(userService.getUserById(UserId.validated(USER_ID))).willReturn(user);
-                given(questionRepository.findById(QUESTION_ID)).willReturn(Optional.of(question));
-                voteRequest = VoteRequest.valid(VoteType.UP);
+                given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
+                given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
+
+                given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
+                VoteRequest voteRequest = VoteRequest.valid(VoteType.UP);
+
+                score = questionService.voteQuestion(UserId.validated(voter.getId()), QuestionId.validated(QUESTION_ID), voteRequest);
             }
 
             @Test
             @SneakyThrows
             public void returnIncrementedScore() {
-                Score score = questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID), voteRequest);
                 assertThat(score.getScore()).isEqualTo(11);
             }
 
             @Test
             @SneakyThrows
             public void incrementUpVoteCastCountOfVoter() {
-                questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID), voteRequest);
-
-                assertThat(user.getCastUpVotes()).isEqualTo(11);
-                verify(userService).update(user);
+                assertThat(voter.getCastUpVotes()).isEqualTo(11);
+                verify(userService).update(voter);
             }
 
             @Test
             @SneakyThrows
             public void incrementsScoreOfQuestion() {
-                questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID), voteRequest);
-
                 assertThat(question.getScore()).isEqualTo(11);
                 verify(questionRepository).save(question);
             }
 
+            @Test
+            @SneakyThrows
+            public void incrementsAuthorReputation() {
+                assertThat(author.getReputation()).isEqualTo(AUTHOR_REPUTATION + 10);
+                verify(userService).update(author);
+            }
         }
 
         @Nested
         public class OnDownVote {
 
-            private VoteRequest voteRequest;
+            private Score score;
 
             @BeforeEach
             @SneakyThrows
             public void setUp() {
-                given(userService.getUserById(UserId.validated(USER_ID))).willReturn(user);
-                given(questionRepository.findById(QUESTION_ID)).willReturn(Optional.of(question));
-                voteRequest = VoteRequest.valid(VoteType.DOWN);
+                given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
+                given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
+
+                given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
+                VoteRequest voteRequest = VoteRequest.valid(VoteType.DOWN);
+
+                score = questionService.voteQuestion(UserId.validated(voter.getId()), QuestionId.validated(QUESTION_ID),
+                        voteRequest);
             }
 
             @Test
             @SneakyThrows
             public void returnsDecrementedScoreOfQuestion() {
-                Score score = questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID),
-                        voteRequest);
-
                 assertThat(score.getScore()).isEqualTo(9);
             }
 
             @Test
             @SneakyThrows
             public void incrementsCountOfDownVotesCastOfVoter() {
-                questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID), voteRequest);
-
-                assertThat(user.getCastDownVotes()).isEqualTo(11);
-                verify(userService).update(user);
+                assertThat(voter.getCastDownVotes()).isEqualTo(11);
+                verify(userService).update(voter);
             }
 
             @Test
             @SneakyThrows
             public void saveQuestionWithUpdatedScore() {
-                questionService.voteQuestion(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID), voteRequest);
                 assertThat(question.getScore()).isEqualTo(9);
                 verify(questionRepository).save(question);
+            }
+
+            @Test
+            @SneakyThrows
+            public void decrementsAuthorReputation() {
+                assertThat(author.getReputation()).isEqualTo(AUTHOR_REPUTATION - 5);
+                verify(userService).update(author);
             }
         }
 
@@ -400,30 +422,16 @@ public class QuestionServiceShould {
         }
     }
 
-    private User aUser() {
-        User user = new User();
-        user.setId(USER_ID);
-        return user;
+    private QuestionBuilder aQuestion(String id) {
+        return QuestionBuilder.aQuestion()
+                .withId(id)
+                .withTitle(QUESTION_TITLE)
+                .withBody(QUESTION_BODY)
+                .withTags(List.of(
+                        aTag().withId("1").withName("java").build(),
+                        aTag().withId("2").withName("kata").build())
+                )
+                .withAuthorId(USER_ID);
     }
 
-    private Question aQuestion(String id) {
-        Question question = new Question();
-        question.setId(id);
-        question.setTitle(QUESTION_TITLE);
-        question.setBody(QUESTION_BODY);
-        question.setCreatedAt(System.currentTimeMillis());
-        question.setTags(List.of(
-                aTag("1", "java"),
-                aTag("2", "kata")
-        ));
-        question.setAuthorId(USER_ID);
-        return question;
-    }
-
-    private Tag aTag(String id, String name) {
-        Tag tag = new Tag();
-        tag.setId(id);
-        tag.setName(name);
-        return tag;
-    }
 }

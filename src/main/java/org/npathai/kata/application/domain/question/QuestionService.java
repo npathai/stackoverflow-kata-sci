@@ -1,5 +1,6 @@
 package org.npathai.kata.application.domain.question;
 
+import lombok.SneakyThrows;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
@@ -22,7 +23,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import java.time.Clock;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class QuestionService {
@@ -131,25 +135,30 @@ public class QuestionService {
     }
 
     private Question getQuestionExplosively(QuestionId questionId) {
-        Question question = questionRepository.findById(questionId.getId())
+        return questionRepository.findById(questionId.getId())
                 .orElseThrow(UnknownEntityException::new);
-        return question;
     }
 
+    @SneakyThrows
     public Score voteQuestion(UserId userId, QuestionId questionId, VoteRequest voteRequest) {
         Question question = getQuestionExplosively(questionId);
         User voter = userService.getUserById(userId);
+        User author = userService.getUserById(UserId.validated(question.getAuthorId()));
 
         Score score = new Score();
         if (voteRequest.getType() == VoteType.UP) {
             score.setScore(question.getScore() + 1);
             voter.setCastUpVotes(voter.getCastUpVotes() + 1);
+            author.setReputation(author.getReputation() + 10);
         } else {
             voter.setCastDownVotes(voter.getCastDownVotes() + 1);
             score.setScore(question.getScore() - 1);
+            author.setReputation(author.getReputation() - 5);
         }
 
         userService.update(voter);
+        userService.update(author);
+
         question.setScore(score.getScore());
         questionRepository.save(question);
 

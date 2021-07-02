@@ -121,7 +121,6 @@ public class QuestionVotingFeatureShould extends AcceptanceTestBase {
         assertThat(userDsl.getUserById(NEW_USER_ID).exec().getReputation()).isEqualTo(1);
     }
 
-
     private void assertVoterVoteCount(String voterId, int upVoteCount, int downVoteCount) {
         User voter1 = userDsl.getUserById(voterId).exec();
 
