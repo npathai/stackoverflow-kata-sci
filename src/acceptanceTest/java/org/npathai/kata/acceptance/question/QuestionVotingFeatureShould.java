@@ -104,7 +104,7 @@ public class QuestionVotingFeatureShould extends AcceptanceTestBase {
                 .execReturningResponseEntity();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
-        assertThat(questionDsl.getQuestionById(questionId).exec().getQuestion().getScore()).isEqualTo(0);
+        assertThat(questionDsl.getQuestionById(questionId).exec().getQuestion().getScore()).isEqualTo(1);
     }
 
     @VotingScenarioAcceptanceTest
@@ -116,7 +116,7 @@ public class QuestionVotingFeatureShould extends AcceptanceTestBase {
                 .execReturningResponseEntity();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(questionDsl.getQuestionById(questionId).exec().getQuestion().getScore()).isEqualTo(0);
+        assertThat(questionDsl.getQuestionById(questionId).exec().getQuestion().getScore()).isEqualTo(1);
     }
 
     @VotingScenarioAcceptanceTest
