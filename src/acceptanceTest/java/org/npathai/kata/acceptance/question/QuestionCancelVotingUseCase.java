@@ -2,7 +2,6 @@ package org.npathai.kata.acceptance.question;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.npathai.kata.acceptance.base.AcceptanceTest;
 import org.npathai.kata.acceptance.base.AcceptanceTestBase;
 import org.npathai.kata.acceptance.question.dsl.QuestionDsl;
 import org.npathai.kata.acceptance.user.dsl.UserDsl;
