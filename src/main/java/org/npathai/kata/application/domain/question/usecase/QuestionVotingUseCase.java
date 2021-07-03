@@ -41,8 +41,15 @@ public class QuestionVotingUseCase {
             throw new ImpermissibleOperationException("Can't cast vote on own question");
         }
 
+        Vote vote;
+        if (voteRequest.getType() == VoteType.UP) {
+            vote = question.upVote(author, voter);
+        } else {
+            vote = question.downVote(author, voter);
+        }
+        vote.setId(voteIdGenerator.get());
+
         ensureReputation(voteRequest, voter);
-        Vote vote = createVote(voteRequest, question, voter);
 
         if (voteRequest.getType() == VoteType.UP) {
             question.setScore(question.getScore() + 1);
@@ -75,15 +82,6 @@ public class QuestionVotingUseCase {
                 throw new InsufficientReputationException();
             }
         }
-    }
-
-    private Vote createVote(VoteRequest voteRequest, Question question, User voter) {
-        Vote vote = new Vote();
-        vote.setId(voteIdGenerator.get());
-        vote.setQuestionId(question.getId());
-        vote.setVoterId(voter.getId());
-        vote.setType(voteRequest.getType().val);
-        return vote;
     }
 
     private Question getQuestionExplosively(QuestionId questionId) {
