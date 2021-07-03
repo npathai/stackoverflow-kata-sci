@@ -1,6 +1,7 @@
 package org.npathai.kata.application.domain.question.dto;
 
 import lombok.Data;
+import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.user.dto.User;
@@ -27,11 +28,18 @@ public class Question {
     private int answerCount;
     private int score;
 
-    public Vote upVote(User author, User voter) {
+    public Vote upVote(User author, User voter) throws ImpermissibleOperationException {
+        if (voter.equals(author)) {
+            throw new ImpermissibleOperationException("Can't cast vote on own question");
+        }
+
         return createVote(VoteType.UP, this, voter);
     }
 
-    public Vote downVote(User author, User voter) {
+    public Vote downVote(User author, User voter) throws ImpermissibleOperationException {
+        if (voter.equals(author)) {
+            throw new ImpermissibleOperationException("Can't cast vote on own question");
+        }
         return createVote(VoteType.DOWN, this, voter);
     }
 

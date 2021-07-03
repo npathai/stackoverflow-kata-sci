@@ -37,10 +37,6 @@ public class QuestionVotingUseCase {
         User voter = userService.getUserById(userId);
         User author = userService.getUserById(UserId.validated(question.getAuthorId()));
 
-        if (voter.equals(author)) {
-            throw new ImpermissibleOperationException("Can't cast vote on own question");
-        }
-
         Vote vote;
         if (voteRequest.getType() == VoteType.UP) {
             vote = question.upVote(author, voter);
