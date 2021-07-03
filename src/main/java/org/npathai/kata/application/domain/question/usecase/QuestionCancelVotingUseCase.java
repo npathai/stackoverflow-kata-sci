@@ -9,7 +9,6 @@ import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.user.UserService;
 import org.npathai.kata.application.domain.user.dto.User;
 import org.npathai.kata.application.domain.vote.VoteRepository;
-import org.npathai.kata.application.domain.vote.VoteType;
 import org.npathai.kata.application.domain.vote.dto.Score;
 import org.npathai.kata.application.domain.vote.dto.Vote;
 
@@ -28,7 +27,7 @@ public class QuestionCancelVotingUseCase {
 
     public Score cancelVote(UserId voterId, QuestionId questionId) throws BadRequestParametersException {
         User voter = userService.getUserById(voterId);
-        Question question = getQuestionExplosively(questionId);
+        Question question = getQuestionBy(questionId);
         Vote vote = voteRepository.findByQuestionIdAndVoterId(question.getId(), voterId.getId());
         User author = userService.getUserById(UserId.validated(question.getAuthorId()));
 
@@ -44,7 +43,7 @@ public class QuestionCancelVotingUseCase {
         return score;
     }
 
-    private Question getQuestionExplosively(QuestionId questionId) {
+    private Question getQuestionBy(QuestionId questionId) {
         return questionRepository.findById(questionId.getId())
                 .orElseThrow(UnknownEntityException::new);
     }

@@ -15,6 +15,9 @@ import java.util.List;
 @Entity
 @Table(name = "questions")
 public class Question {
+    private static final int UP_VOTE_REP_GAIN = 10;
+    private static final int DOWN_VOTE_REP_LOSS = 5;
+
     @Id
     private String id;
     private String title;
@@ -27,39 +30,36 @@ public class Question {
     private int answerCount;
     private int score;
 
-    public Vote upVote(User author, User voter) throws ImpermissibleOperationException, InsufficientReputationException {
-        if (voter.equals(author)) {
-            throw new ImpermissibleOperationException("Can't cast vote on own question");
-        }
-
-        if (voter.getReputation() < 15) {
+    private Vote upVote(User author, User voter) throws InsufficientReputationException {
+        if (!voter.hasReputationToUpVote()) {
             throw new InsufficientReputationException();
         }
 
-        setScore(getScore() + 1);
-        voter.setCastUpVotes(voter.getCastUpVotes() + 1);
-        author.setReputation(author.getReputation() + 10);
+        incrementScore();
+        voter.incrementCastUpVotes();
+        author.incrementReputationBy(UP_VOTE_REP_GAIN);
 
-        return createVote(VoteType.UP, this, voter);
+        return aVote(VoteType.UP, voter);
     }
 
-    public Vote downVote(User author, User voter) throws ImpermissibleOperationException, InsufficientReputationException {
-        if (voter.equals(author)) {
-            throw new ImpermissibleOperationException("Can't cast vote on own question");
-        }
-
-        if (voter.getReputation() < 125) {
+    private Vote downVote(User author, User voter) throws InsufficientReputationException {
+        if (!voter.hasReputationToDownVote()) {
             throw new InsufficientReputationException();
         }
 
-        setScore(getScore() - 1);
-        voter.setCastDownVotes(voter.getCastDownVotes() + 1);
-        author.setReputation(author.getReputation() - 5);
+        decrementScore();
+        voter.incrementCastDownVotes();
+        author.decrementReputationBy(DOWN_VOTE_REP_LOSS);
 
-        return createVote(VoteType.DOWN, this, voter);
+        return aVote(VoteType.DOWN, voter);
     }
+
 
     public Vote vote(VoteType type, User author, User voter) throws ImpermissibleOperationException, InsufficientReputationException {
+        if (voter.equals(author)) {
+            throw new ImpermissibleOperationException("Can't cast vote on own question");
+        }
+
         if (type == VoteType.UP) {
             return upVote(author, voter);
         } else {
@@ -69,22 +69,29 @@ public class Question {
 
     public void cancelVote(Vote vote, User author, User voter) {
         if (VoteType.from(vote.getType()) == VoteType.UP) {
-            setScore(getScore() - 1);
-            voter.setCastUpVotes(voter.getCastUpVotes() - 1);
-            author.setReputation(author.getReputation() - 10);
+            decrementScore();
+            voter.decrementCastUpVotes();
+            author.decrementReputationBy(UP_VOTE_REP_GAIN);
         } else {
-            voter.setCastDownVotes(voter.getCastDownVotes() - 1);
-            setScore(getScore() + 1);
-            author.setReputation(author.getReputation() + 5);
+            incrementScore();
+            voter.decrementCastDownVotes();
+            author.incrementReputationBy(DOWN_VOTE_REP_LOSS);
         }
     }
 
-    private Vote createVote(VoteType voteType, Question question, User voter) {
+    private void incrementScore() {
+        score += 1;
+    }
+
+    private void decrementScore() {
+        score -= 1;
+    }
+
+    private Vote aVote(VoteType voteType, User voter) {
         Vote vote = new Vote();
-        vote.setQuestionId(question.getId());
+        vote.setQuestionId(getId());
         vote.setVoterId(voter.getId());
         vote.setType(voteType.val);
         return vote;
     }
-
 }
