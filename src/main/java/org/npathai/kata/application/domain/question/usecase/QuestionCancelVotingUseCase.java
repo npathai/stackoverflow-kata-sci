@@ -35,10 +35,8 @@ public class QuestionCancelVotingUseCase {
         question.cancelVote(vote, author, voter);
 
         if (VoteType.UP.val.equals(vote.getType())) {
-            voter.setCastUpVotes(voter.getCastUpVotes() - 1);
             author.setReputation(author.getReputation() - 10);
         } else {
-            voter.setCastDownVotes(voter.getCastDownVotes() - 1);
             author.setReputation(author.getReputation() + 5);
         }
 

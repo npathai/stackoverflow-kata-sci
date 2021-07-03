@@ -64,7 +64,9 @@ public class Question {
     public void cancelVote(Vote vote, User author, User voter) {
         if (VoteType.from(vote.getType()) == VoteType.UP) {
             setScore(getScore() - 1);
+            voter.setCastUpVotes(voter.getCastUpVotes() - 1);
         } else {
+            voter.setCastDownVotes(voter.getCastDownVotes() - 1);
             setScore(getScore() + 1);
         }
     }
