@@ -46,10 +46,8 @@ public class QuestionVotingUseCase {
         vote.setId(voteIdGenerator.get());
 
         if (voteRequest.getType() == VoteType.UP) {
-            voter.setCastUpVotes(voter.getCastUpVotes() + 1);
             author.setReputation(author.getReputation() + 10);
         } else {
-            voter.setCastDownVotes(voter.getCastDownVotes() + 1);
             author.setReputation(author.getReputation() - 5);
         }
 
