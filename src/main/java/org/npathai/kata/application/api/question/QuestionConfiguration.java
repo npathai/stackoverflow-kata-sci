@@ -9,6 +9,7 @@ import org.npathai.kata.application.domain.question.persistence.QuestionReposito
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.UserService;
+import org.npathai.kata.application.domain.vote.VoteRepository;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -20,11 +21,12 @@ public class QuestionConfiguration {
     @Bean
     public QuestionService createQuestionService(TagRepository tagRepository, QuestionRepository questionRepository,
                                                  AnswerRepository answerRepository, UserService userService,
+                                                 VoteRepository voteRepository,
                                                  IdGenerator questionIdGenerator, IdGenerator tagIdGenerator,
                                                  IdGenerator answerIdGenerator,
-                                                 Clock clock) {
+                                                 IdGenerator voteIdGenerator, Clock clock) {
         return new QuestionService(tagRepository, questionRepository, answerRepository, userService,
-                questionIdGenerator, tagIdGenerator, answerIdGenerator, clock);
+                voteRepository, questionIdGenerator, tagIdGenerator, answerIdGenerator, voteIdGenerator, clock);
     }
 
     @Bean

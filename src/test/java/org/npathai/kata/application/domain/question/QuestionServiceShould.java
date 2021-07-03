@@ -11,7 +11,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
@@ -28,9 +27,11 @@ import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.user.UserService;
 import org.npathai.kata.application.domain.user.dto.User;
+import org.npathai.kata.application.domain.vote.VoteRepository;
 import org.npathai.kata.application.domain.vote.VoteRequest;
 import org.npathai.kata.application.domain.vote.VoteType;
 import org.npathai.kata.application.domain.vote.dto.Score;
+import org.npathai.kata.application.domain.vote.dto.Vote;
 import org.springframework.data.domain.*;
 
 import java.time.Clock;
@@ -45,8 +46,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.npathai.kata.application.domain.user.UserBuilder.anUser;
 import static org.npathai.kata.application.domain.tag.TagBuilder.aTag;
+import static org.npathai.kata.application.domain.user.UserBuilder.anUser;
 
 @ExtendWith(MockitoExtension.class)
 public class QuestionServiceShould {
@@ -79,17 +80,25 @@ public class QuestionServiceShould {
     @Mock
     IdGenerator answerIdGenerator;
 
+    @Mock
+    VoteRepository voteRepository;
+
+    @Mock
+    IdGenerator voteIdGenerator;
+
     Clock clock;
 
     QuestionService questionService;
 
     PostQuestionRequest request;
 
+
     @BeforeEach
     public void setUp() {
         clock = fixedClock();
         questionService = new QuestionService(tagRepository, questionRepository,
-                answerRepository, userService, questionIdGenerator, tagIdGenerator, answerIdGenerator, clock);
+                answerRepository, userService, voteRepository, questionIdGenerator, tagIdGenerator, answerIdGenerator,
+                voteIdGenerator, clock);
         request = PostQuestionRequest.valid(QUESTION_TITLE, QUESTION_BODY, QUESTION_TAGS);
     }
 
@@ -331,14 +340,15 @@ public class QuestionServiceShould {
 
             private Score score;
             private VoteRequest voteRequest;
+            private final String voteId = "v1";
 
             @BeforeEach
             @SneakyThrows
             public void setUp() {
                 given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
                 given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
-
                 given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
+                given(voteIdGenerator.get()).willReturn(voteId);
                 voteRequest = VoteRequest.valid(VoteType.UP);
 
                 score = castUpVote(voter, QUESTION_ID);
@@ -369,6 +379,17 @@ public class QuestionServiceShould {
             public void incrementsAuthorReputation() {
                 assertThat(author.getReputation()).isEqualTo(AUTHOR_REPUTATION + 10);
                 verify(userService).update(author);
+            }
+
+            @Test
+            public void savesVoteInRepository() {
+                Vote expectedVote = new Vote();
+                expectedVote.setId(voteId);
+                expectedVote.setQuestionId(question.getId());
+                expectedVote.setVoterId(voter.getId());
+                expectedVote.setType("up");
+
+                verify(voteRepository).save(expectedVote);
             }
 
             @Test
@@ -413,10 +434,44 @@ public class QuestionServiceShould {
         }
 
         @Nested
+        public class CancelUpVote {
+
+            private Score cancelledScore;
+
+            @BeforeEach
+            @SneakyThrows
+            public void setUp() {
+                Vote vote = new Vote();
+                vote.setId("1");
+                vote.setVoterId(voter.getId());
+                vote.setQuestionId(question.getId());
+                vote.setType("up");
+                given(voteRepository.findByQuestionIdAndVoterId(question.getId(), voter.getId())).willReturn(vote);
+
+                given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
+
+                cancelledScore = questionService.cancelVote(UserId.validated(voter.getId()), QuestionId.validated(question.getId()));
+            }
+
+            @Test
+            @SneakyThrows
+            public void returnDecreasedScoreWhenVoteIsCancelled() {
+                assertThat(cancelledScore.getScore()).isEqualTo(9);
+            }
+
+            @Test
+            public void updateTheQuestionWithDecreasedScore() {
+                assertThat(question.getScore()).isEqualTo(9);
+                verify(questionRepository).save(question);
+            }
+        }
+
+        @Nested
         public class OnDownVote {
 
             private Score score;
             private VoteRequest voteRequest;
+            private final String voteId = "v1";
 
             @BeforeEach
             @SneakyThrows
@@ -424,6 +479,7 @@ public class QuestionServiceShould {
                 given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
                 given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
                 given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
+                given(voteIdGenerator.get()).willReturn(voteId);
 
                 voteRequest = VoteRequest.valid(VoteType.DOWN);
 
@@ -456,6 +512,17 @@ public class QuestionServiceShould {
             public void decrementsAuthorReputation() {
                 assertThat(author.getReputation()).isEqualTo(AUTHOR_REPUTATION - 5);
                 verify(userService).update(author);
+            }
+
+            @Test
+            public void savesVoteInRepository() {
+                Vote expectedVote = new Vote();
+                expectedVote.setId(voteId);
+                expectedVote.setQuestionId(question.getId());
+                expectedVote.setVoterId(voter.getId());
+                expectedVote.setType("down");
+
+                verify(voteRepository).save(expectedVote);
             }
 
             @Test
@@ -493,6 +560,41 @@ public class QuestionServiceShould {
                         QuestionId.validated(question.getId()), voteRequest)).isInstanceOf(InsufficientReputationException.class));
             }
 
+        }
+
+
+        @Nested
+        public class CancelDownVote {
+
+            private Score cancelledScore;
+            private Vote vote;
+
+            @BeforeEach
+            @SneakyThrows
+            public void setUp() {
+                vote = new Vote();
+                vote.setId("1");
+                vote.setVoterId(voter.getId());
+                vote.setQuestionId(question.getId());
+                vote.setType("down");
+                given(voteRepository.findByQuestionIdAndVoterId(question.getId(), voter.getId())).willReturn(vote);
+
+                given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
+
+                cancelledScore = questionService.cancelVote(UserId.validated(voter.getId()), QuestionId.validated(question.getId()));
+            }
+
+            @Test
+            @SneakyThrows
+            public void returnIncrementedQuestionScore() {
+                assertThat(cancelledScore.getScore()).isEqualTo(11);
+            }
+
+            @Test
+            @SneakyThrows
+            public void deleteVote() {
+                verify(voteRepository).delete(vote);
+            }
         }
 
         @Test

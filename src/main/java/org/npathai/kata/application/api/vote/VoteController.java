@@ -1,5 +1,6 @@
 package org.npathai.kata.application.api.vote;
 
+import lombok.SneakyThrows;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.QuestionId;
@@ -34,6 +35,16 @@ public class VoteController {
             return ResponseEntity.badRequest().build();
         } catch (InsufficientReputationException ex) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @DeleteMapping("/{questionId}/votes")
+    public ResponseEntity<Score> cancelVote(@RequestHeader String userId, @PathVariable String questionId) {
+        try {
+            Score score = questionService.cancelVote(UserId.validated(userId), QuestionId.validated(questionId));
+            return ResponseEntity.ok(score);
+        } catch (BadRequestParametersException ex) {
+            return ResponseEntity.badRequest().build();
         }
     }
 }

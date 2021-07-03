@@ -1,6 +1,5 @@
 package org.npathai.kata.application.domain.question;
 
-import lombok.SneakyThrows;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
@@ -18,9 +17,11 @@ import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.user.UserService;
 import org.npathai.kata.application.domain.user.dto.User;
+import org.npathai.kata.application.domain.vote.VoteRepository;
 import org.npathai.kata.application.domain.vote.VoteRequest;
 import org.npathai.kata.application.domain.vote.VoteType;
 import org.npathai.kata.application.domain.vote.dto.Score;
+import org.npathai.kata.application.domain.vote.dto.Vote;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -37,22 +38,27 @@ public class QuestionService {
     private final TagRepository tagRepository;
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
+    private final VoteRepository voteRepository;
     private final IdGenerator questionIdGenerator;
     private final IdGenerator tagIdGenerator;
     private final IdGenerator answerIdGenerator;
     private final UserService userService;
+    private final IdGenerator voteIdGenerator;
     private final Clock clock;
 
     public QuestionService(TagRepository tagRepository, QuestionRepository questionRepository,
-                           AnswerRepository answerRepository, UserService userService, IdGenerator questionIdGenerator,
-                           IdGenerator tagIdGenerator, IdGenerator answerIdGenerator, Clock clock) {
+                           AnswerRepository answerRepository, UserService userService, VoteRepository voteRepository,
+                           IdGenerator questionIdGenerator, IdGenerator tagIdGenerator, IdGenerator answerIdGenerator,
+                           IdGenerator voteIdGenerator, Clock clock) {
         this.tagRepository = tagRepository;
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
         this.userService = userService;
+        this.voteRepository = voteRepository;
         this.questionIdGenerator = questionIdGenerator;
         this.tagIdGenerator = tagIdGenerator;
         this.answerIdGenerator = answerIdGenerator;
+        this.voteIdGenerator = voteIdGenerator;
         this.clock = clock;
     }
 
@@ -175,6 +181,33 @@ public class QuestionService {
 
         question.setScore(score.getScore());
         questionRepository.save(question);
+
+        Vote vote = new Vote();
+        vote.setId(voteIdGenerator.get());
+        vote.setQuestionId(question.getId());
+        vote.setVoterId(voter.getId());
+        vote.setType(voteRequest.getType().val);
+
+        voteRepository.save(vote);
+
+        return score;
+    }
+
+    public Score cancelVote(UserId voterId, QuestionId questionId) {
+        Question question = getQuestionExplosively(questionId);
+        Vote vote = voteRepository.findByQuestionIdAndVoterId(question.getId(), voterId.getId());
+
+        if (VoteType.UP.val.equals(vote.getType())) {
+            question.setScore(question.getScore() - 1);
+        } else {
+            question.setScore(question.getScore() + 1);
+        }
+
+        Score score = new Score();
+        score.setScore(question.getScore());
+
+        questionRepository.save(question);
+        voteRepository.delete(vote);
 
         return score;
     }

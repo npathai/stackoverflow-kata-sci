@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.testcontainers.shaded.okhttp3.Response;
 
 @ExtendWith(MockitoExtension.class)
 public class VoteControllerShould {
@@ -100,4 +101,23 @@ public class VoteControllerShould {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 
+    @Test
+    @SneakyThrows
+    public void returnScoreAfterCancellingTheVote() {
+        given(questionService.cancelVote(UserId.validated(USER_ID), QuestionId.validated(QUESTION_ID)))
+                .willReturn(score);
+
+        ResponseEntity<Score> response = voteController.cancelVote(USER_ID, QUESTION_ID);
+
+        assertThat(response.getBody()).isSameAs(score);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    @SneakyThrows
+    public void returns400BadRequestWhenQuestionIdIsInvalid() {
+        ResponseEntity<Score> response = voteController.cancelVote("", "");
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+    }
 }
