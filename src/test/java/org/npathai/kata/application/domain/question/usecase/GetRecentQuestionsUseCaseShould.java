@@ -22,7 +22,7 @@ import static org.npathai.kata.application.domain.tag.TagBuilder.aTag;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-public class RecentQuestionsShould {
+public class GetRecentQuestionsUseCaseShould {
     private static final String USER_ID = "U1";
     private static final String QUESTION_TITLE = "First Question";
     private static final String QUESTION_BODY = "First question body";

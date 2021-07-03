@@ -38,17 +38,17 @@ public class QuestionService {
     private final GetRecentQuestionsUseCase getRecentQuestionsUseCase;
 
     public QuestionService(PostQuestionUseCase postQuestionUseCase,
-                           QuestionRepository questionRepository, AnswerRepository answerRepository,
+                           GetRecentQuestionsUseCase getRecentQuestionsUseCase, QuestionRepository questionRepository, AnswerRepository answerRepository,
                            UserService userService, VoteRepository voteRepository,
                            IdGenerator answerIdGenerator, IdGenerator voteIdGenerator) {
         this.postQuestionUseCase = postQuestionUseCase;
+        this.getRecentQuestionsUseCase = getRecentQuestionsUseCase;
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
         this.userService = userService;
         this.voteRepository = voteRepository;
         this.answerIdGenerator = answerIdGenerator;
         this.voteIdGenerator = voteIdGenerator;
-        this.getRecentQuestionsUseCase = new GetRecentQuestionsUseCase(questionRepository);
     }
 
     public Question post(UserId userId, PostQuestionRequest validRequest) {

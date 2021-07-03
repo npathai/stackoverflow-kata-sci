@@ -6,6 +6,7 @@ import org.npathai.kata.application.api.validation.StringValidators;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
+import org.npathai.kata.application.domain.question.usecase.GetRecentQuestionsUseCase;
 import org.npathai.kata.application.domain.question.usecase.PostQuestionUseCase;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
@@ -26,12 +27,19 @@ public class QuestionConfiguration {
     }
 
     @Bean
-    public QuestionService createQuestionService(PostQuestionUseCase postQuestionUseCase, QuestionRepository questionRepository,
+    public GetRecentQuestionsUseCase getRecentQuestionsUseCase(QuestionRepository questionRepository) {
+        return new GetRecentQuestionsUseCase(questionRepository);
+    }
+
+    @Bean
+    public QuestionService createQuestionService(PostQuestionUseCase postQuestionUseCase,
+                                                 GetRecentQuestionsUseCase getRecentQuestionsUseCase,
+                                                 QuestionRepository questionRepository,
                                                  AnswerRepository answerRepository, UserService userService,
                                                  VoteRepository voteRepository,
                                                  IdGenerator answerIdGenerator,
                                                  IdGenerator voteIdGenerator) {
-        return new QuestionService(postQuestionUseCase, questionRepository, answerRepository, userService,
+        return new QuestionService(postQuestionUseCase, getRecentQuestionsUseCase, questionRepository, answerRepository, userService,
                 voteRepository, answerIdGenerator, voteIdGenerator);
     }
 

@@ -17,6 +17,7 @@ import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
+import org.npathai.kata.application.domain.question.usecase.GetRecentQuestionsUseCase;
 import org.npathai.kata.application.domain.question.usecase.PostQuestionUseCase;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.services.UnknownEntityException;
@@ -83,6 +84,9 @@ public class QuestionServiceShould {
     PostQuestionUseCase postQuestionUseCase;
 
     @Mock
+    GetRecentQuestionsUseCase getRecentQuestionsUseCase;
+
+    @Mock
     IdGenerator voteIdGenerator;
 
     Clock clock;
@@ -95,7 +99,9 @@ public class QuestionServiceShould {
     @BeforeEach
     public void setUp() {
         clock = fixedClock();
-        questionService = new QuestionService(postQuestionUseCase, questionRepository,
+        questionService = new QuestionService(postQuestionUseCase,
+                getRecentQuestionsUseCase,
+                questionRepository,
                 answerRepository, userService, voteRepository, answerIdGenerator,
                 voteIdGenerator);
         request = PostQuestionRequest.valid(QUESTION_TITLE, QUESTION_BODY, QUESTION_TAGS);
