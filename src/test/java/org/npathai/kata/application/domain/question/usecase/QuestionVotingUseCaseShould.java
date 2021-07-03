@@ -178,61 +178,6 @@ public class QuestionVotingUseCaseShould {
     }
 
     @Nested
-    public class CancelUpVote {
-
-        private Score cancelledScore;
-        private Vote vote;
-
-        @BeforeEach
-        @SneakyThrows
-        public void setUp() {
-            vote = new Vote();
-            vote.setId("1");
-            vote.setVoterId(voter.getId());
-            vote.setQuestionId(question.getId());
-            vote.setType("up");
-            given(voteRepository.findByQuestionIdAndVoterId(question.getId(), voter.getId())).willReturn(vote);
-
-            given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
-            given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
-
-            given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
-
-            cancelledScore = useCase.cancelVote(UserId.validated(voter.getId()), QuestionId.validated(question.getId()));
-        }
-
-        @Test
-        @SneakyThrows
-        public void returnDecreasedScoreWhenVoteIsCancelled() {
-            assertThat(cancelledScore.getScore()).isEqualTo(9);
-        }
-
-        @Test
-        public void decrementQuestionScoreAndUpdate() {
-            assertThat(question.getScore()).isEqualTo(9);
-            verify(questionRepository).save(question);
-        }
-
-        @Test
-        public void decrementVoterCastUpVotesAndUpdate() {
-            assertThat(voter.getCastUpVotes()).isEqualTo(9);
-            verify(userService).update(voter);
-        }
-
-        @Test
-        public void decrementAuthorReputationAndUpdate() {
-            assertThat(author.getReputation()).isEqualTo(AUTHOR_REPUTATION - 10);
-            verify(userService).update(author);
-        }
-
-        @Test
-        @SneakyThrows
-        public void deleteVote() {
-            verify(voteRepository).delete(vote);
-        }
-    }
-
-    @Nested
     public class OnDownVote {
 
         private Score score;
@@ -326,62 +271,6 @@ public class QuestionVotingUseCaseShould {
                     QuestionId.validated(question.getId()), voteRequest)).isInstanceOf(InsufficientReputationException.class));
         }
 
-    }
-
-
-    @Nested
-    public class CancelDownVote {
-
-        private Score cancelledScore;
-        private Vote vote;
-
-        @BeforeEach
-        @SneakyThrows
-        public void setUp() {
-            vote = new Vote();
-            vote.setId("1");
-            vote.setVoterId(voter.getId());
-            vote.setQuestionId(question.getId());
-            vote.setType("down");
-            given(voteRepository.findByQuestionIdAndVoterId(question.getId(), voter.getId())).willReturn(vote);
-
-            given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
-            given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
-
-            given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
-
-            cancelledScore = useCase.cancelVote(UserId.validated(voter.getId()), QuestionId.validated(question.getId()));
-        }
-
-        @Test
-        @SneakyThrows
-        public void returnIncrementedQuestionScore() {
-            assertThat(cancelledScore.getScore()).isEqualTo(11);
-        }
-
-        @Test
-        public void incrementQuestionScoreAndUpdate() {
-            assertThat(question.getScore()).isEqualTo(11);
-            verify(questionRepository).save(question);
-        }
-
-        @Test
-        public void decrementVoterCastDownVotesAndUpdate() {
-            assertThat(voter.getCastDownVotes()).isEqualTo(9);
-            verify(userService).update(voter);
-        }
-
-        @Test
-        public void incrementAuthorReputationAndUpdate() {
-            assertThat(author.getReputation()).isEqualTo(AUTHOR_REPUTATION + 5);
-            verify(userService).update(author);
-        }
-
-        @Test
-        @SneakyThrows
-        public void deleteVote() {
-            verify(voteRepository).delete(vote);
-        }
     }
 
     @Test

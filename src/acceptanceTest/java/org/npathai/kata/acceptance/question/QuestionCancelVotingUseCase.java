@@ -12,7 +12,7 @@ import org.npathai.kata.acceptance.vote.VotingScenarioAcceptanceTest;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("Question cancel voting feature should")
-public class QuestionCancelVotingFeatureShould extends AcceptanceTestBase {
+public class QuestionCancelVotingUseCase extends AcceptanceTestBase {
 
     private static final String VOTER_2_ID = "1";
     public static final String ORIGINAL_POSTER_ID = "2";

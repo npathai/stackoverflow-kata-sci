@@ -21,17 +21,20 @@ public class QuestionService {
     private final PostAnswerUseCase postAnswerUseCase;
     private final GetQuestionUseCase getQuestionUseCase;
     private final QuestionVotingUseCase questionVotingUseCase;
+    private final QuestionCancelVotingUseCase questionCancelVotingUseCase;
 
     public QuestionService(PostQuestionUseCase postQuestionUseCase,
                            GetRecentQuestionsUseCase getRecentQuestionsUseCase,
                            PostAnswerUseCase postAnswerUseCase,
                            GetQuestionUseCase getQuestionUseCase,
-                           QuestionVotingUseCase questionVotingUseCase) {
+                           QuestionVotingUseCase questionVotingUseCase,
+                           QuestionCancelVotingUseCase questionCancelVotingUseCase) {
         this.postQuestionUseCase = postQuestionUseCase;
         this.getRecentQuestionsUseCase = getRecentQuestionsUseCase;
         this.postAnswerUseCase = postAnswerUseCase;
         this.getQuestionUseCase = getQuestionUseCase;
         this.questionVotingUseCase = questionVotingUseCase;
+        this.questionCancelVotingUseCase = questionCancelVotingUseCase;
     }
 
     public Question post(UserId userId, PostQuestionRequest validRequest) {
@@ -56,7 +59,6 @@ public class QuestionService {
     }
 
     public Score cancelVote(UserId voterId, QuestionId questionId) throws BadRequestParametersException {
-
-        return questionVotingUseCase.cancelVote(voterId, questionId);
+        return questionCancelVotingUseCase.cancelVote(voterId, questionId);
     }
 }

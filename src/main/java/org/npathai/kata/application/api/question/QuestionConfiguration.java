@@ -49,17 +49,29 @@ public class QuestionConfiguration {
     }
 
     @Bean
+    public QuestionCancelVotingUseCase createQuestionCancelVotingUseCase(QuestionRepository questionRepository,
+                                                                         VoteRepository voteRepository,
+                                                                         UserService userService) {
+        return new QuestionCancelVotingUseCase(questionRepository,
+                voteRepository,
+                userService
+        );
+    }
+
+    @Bean
     public QuestionService createQuestionService(PostQuestionUseCase postQuestionUseCase,
                                                  GetRecentQuestionsUseCase getRecentQuestionsUseCase,
                                                  PostAnswerUseCase postAnswerUseCase,
                                                  GetQuestionUseCase getQuestionUseCase,
-                                                 QuestionVotingUseCase questionVotingUseCase) {
+                                                 QuestionVotingUseCase questionVotingUseCase,
+                                                 QuestionCancelVotingUseCase questionCancelVotingUseCase) {
 
         return new QuestionService(postQuestionUseCase,
                 getRecentQuestionsUseCase,
                 postAnswerUseCase,
                 getQuestionUseCase,
-                questionVotingUseCase
+                questionVotingUseCase,
+                questionCancelVotingUseCase
         );
     }
 
