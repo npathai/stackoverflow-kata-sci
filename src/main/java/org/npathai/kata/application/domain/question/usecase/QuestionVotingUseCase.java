@@ -45,14 +45,10 @@ public class QuestionVotingUseCase {
         }
         vote.setId(voteIdGenerator.get());
 
-        ensureReputation(voteRequest, voter);
-
         if (voteRequest.getType() == VoteType.UP) {
-            question.setScore(question.getScore() + 1);
             voter.setCastUpVotes(voter.getCastUpVotes() + 1);
             author.setReputation(author.getReputation() + 10);
         } else {
-            question.setScore(question.getScore() - 1);
             voter.setCastDownVotes(voter.getCastDownVotes() + 1);
             author.setReputation(author.getReputation() - 5);
         }
@@ -66,18 +62,6 @@ public class QuestionVotingUseCase {
         voteRepository.save(vote);
 
         return score;
-    }
-
-    private void ensureReputation(VoteRequest voteRequest, User voter) throws InsufficientReputationException {
-        if (voteRequest.getType() == VoteType.UP) {
-            if (voter.getReputation() < 15) {
-                throw new InsufficientReputationException();
-            }
-        } else {
-            if (voter.getReputation() < 125) {
-                throw new InsufficientReputationException();
-            }
-        }
     }
 
     private Question getQuestionExplosively(QuestionId questionId) {
