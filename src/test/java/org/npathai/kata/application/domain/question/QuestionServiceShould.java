@@ -16,6 +16,7 @@ import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
+import org.npathai.kata.application.domain.question.usecase.GetQuestionUseCase;
 import org.npathai.kata.application.domain.question.usecase.GetRecentQuestionsUseCase;
 import org.npathai.kata.application.domain.question.usecase.PostAnswerUseCase;
 import org.npathai.kata.application.domain.question.usecase.PostQuestionUseCase;
@@ -75,6 +76,9 @@ public class QuestionServiceShould {
     PostAnswerUseCase postAnswerUseCase;
 
     @Mock
+    GetQuestionUseCase getQuestionUseCase;
+
+    @Mock
     IdGenerator voteIdGenerator;
 
     Clock clock;
@@ -90,6 +94,7 @@ public class QuestionServiceShould {
         questionService = new QuestionService(postQuestionUseCase,
                 getRecentQuestionsUseCase,
                 postAnswerUseCase,
+                getQuestionUseCase,
                 questionRepository,
                 answerRepository, userService, voteRepository,
                 voteIdGenerator);
@@ -98,39 +103,6 @@ public class QuestionServiceShould {
 
     private Clock fixedClock() {
         return Clock.fixed(Instant.now(), ZoneId.systemDefault());
-    }
-
-    @Nested
-    public class GetQuestionShould {
-
-        @Test
-        @SneakyThrows
-        public void returnQuestionWithAnswers() {
-            Question question = aQuestion(QUESTION_ID).build();
-
-            Answer answer = new Answer();
-            answer.setId(ANSWER_ID);
-            answer.setAuthorId(ANSWERER_ID);
-            answer.setQuestionId(QUESTION_ID);
-            answer.setBody("Body");
-
-            QuestionWithAnswers expected = new QuestionWithAnswers();
-            expected.setQuestion(question);
-            expected.setAnswers(List.of(answer));
-
-            given(questionRepository.findById(QUESTION_ID)).willReturn(Optional.of(question));
-            given(answerRepository.findByQuestionId(QUESTION_ID)).willReturn(List.of(answer));
-
-            QuestionWithAnswers questionWithAnswers = questionService.getQuestion(QuestionId.validated(QUESTION_ID));
-
-            assertThat(questionWithAnswers).isEqualTo(expected);
-        }
-
-        @Test
-        public void throwExceptionWhenQuestionWithIdNotFound() {
-            assertThatThrownBy(() -> questionService.getQuestion(QuestionId.validated("unknown")))
-                    .isInstanceOf(UnknownEntityException.class);
-        }
     }
 
     @Nested

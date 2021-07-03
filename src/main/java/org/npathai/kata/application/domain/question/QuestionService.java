@@ -9,6 +9,7 @@ import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
+import org.npathai.kata.application.domain.question.usecase.GetQuestionUseCase;
 import org.npathai.kata.application.domain.question.usecase.GetRecentQuestionsUseCase;
 import org.npathai.kata.application.domain.question.usecase.PostAnswerUseCase;
 import org.npathai.kata.application.domain.question.usecase.PostQuestionUseCase;
@@ -25,8 +26,6 @@ import org.npathai.kata.application.domain.vote.dto.Score;
 import org.npathai.kata.application.domain.vote.dto.Vote;
 import org.springframework.data.domain.Page;
 
-import java.util.List;
-
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
@@ -37,14 +36,21 @@ public class QuestionService {
     private final PostQuestionUseCase postQuestionUseCase;
     private final GetRecentQuestionsUseCase getRecentQuestionsUseCase;
     private final PostAnswerUseCase postAnswerUseCase;
+    private final GetQuestionUseCase getQuestionUseCase;
 
     public QuestionService(PostQuestionUseCase postQuestionUseCase,
-                           GetRecentQuestionsUseCase getRecentQuestionsUseCase, PostAnswerUseCase postAnswerUseCase, QuestionRepository questionRepository, AnswerRepository answerRepository,
-                           UserService userService, VoteRepository voteRepository,
+                           GetRecentQuestionsUseCase getRecentQuestionsUseCase,
+                           PostAnswerUseCase postAnswerUseCase,
+                           GetQuestionUseCase getQuestionUseCase,
+                           QuestionRepository questionRepository,
+                           AnswerRepository answerRepository,
+                           UserService userService,
+                           VoteRepository voteRepository,
                            IdGenerator voteIdGenerator) {
         this.postQuestionUseCase = postQuestionUseCase;
         this.getRecentQuestionsUseCase = getRecentQuestionsUseCase;
         this.postAnswerUseCase = postAnswerUseCase;
+        this.getQuestionUseCase = getQuestionUseCase;
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
         this.userService = userService;
@@ -65,12 +71,7 @@ public class QuestionService {
     }
 
     public QuestionWithAnswers getQuestion(QuestionId questionId) {
-        Question question = getQuestionExplosively(questionId);
-        List<Answer> answers = answerRepository.findByQuestionId(question.getId());
-        QuestionWithAnswers questionWithAnswers = new QuestionWithAnswers();
-        questionWithAnswers.setQuestion(question);
-        questionWithAnswers.setAnswers(answers);
-        return questionWithAnswers;
+        return getQuestionUseCase.getQuestion(questionId);
     }
 
     private Question getQuestionExplosively(QuestionId questionId) {

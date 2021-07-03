@@ -6,6 +6,7 @@ import org.npathai.kata.application.api.validation.StringValidators;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
+import org.npathai.kata.application.domain.question.usecase.GetQuestionUseCase;
 import org.npathai.kata.application.domain.question.usecase.GetRecentQuestionsUseCase;
 import org.npathai.kata.application.domain.question.usecase.PostAnswerUseCase;
 import org.npathai.kata.application.domain.question.usecase.PostQuestionUseCase;
@@ -40,14 +41,21 @@ public class QuestionConfiguration {
     }
 
     @Bean
+    public GetQuestionUseCase createGetQuestionUseCase(QuestionRepository questionRepository,
+                                                       AnswerRepository answerRepository) {
+        return new GetQuestionUseCase(questionRepository, answerRepository);
+    }
+
+    @Bean
     public QuestionService createQuestionService(PostQuestionUseCase postQuestionUseCase,
                                                  GetRecentQuestionsUseCase getRecentQuestionsUseCase,
                                                  PostAnswerUseCase postAnswerUseCase,
+                                                 GetQuestionUseCase getQuestionUseCase,
                                                  QuestionRepository questionRepository,
                                                  AnswerRepository answerRepository, UserService userService,
                                                  VoteRepository voteRepository,
                                                  IdGenerator voteIdGenerator) {
-        return new QuestionService(postQuestionUseCase, getRecentQuestionsUseCase, postAnswerUseCase, questionRepository, answerRepository, userService,
+        return new QuestionService(postQuestionUseCase, getRecentQuestionsUseCase, postAnswerUseCase, getQuestionUseCase, questionRepository, answerRepository, userService,
                 voteRepository, voteIdGenerator);
     }
 
