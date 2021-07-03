@@ -437,16 +437,20 @@ public class QuestionServiceShould {
         public class CancelUpVote {
 
             private Score cancelledScore;
+            private Vote vote;
 
             @BeforeEach
             @SneakyThrows
             public void setUp() {
-                Vote vote = new Vote();
+                vote = new Vote();
                 vote.setId("1");
                 vote.setVoterId(voter.getId());
                 vote.setQuestionId(question.getId());
                 vote.setType("up");
                 given(voteRepository.findByQuestionIdAndVoterId(question.getId(), voter.getId())).willReturn(vote);
+
+                given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
+                given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
 
                 given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
 
@@ -460,9 +464,27 @@ public class QuestionServiceShould {
             }
 
             @Test
-            public void updateTheQuestionWithDecreasedScore() {
+            public void decrementQuestionScoreAndUpdate() {
                 assertThat(question.getScore()).isEqualTo(9);
                 verify(questionRepository).save(question);
+            }
+
+            @Test
+            public void decrementVoterCastUpVotesAndUpdate() {
+                assertThat(voter.getCastUpVotes()).isEqualTo(9);
+                verify(userService).update(voter);
+            }
+
+            @Test
+            public void decrementAuthorReputationAndUpdate() {
+                assertThat(author.getReputation()).isEqualTo(AUTHOR_REPUTATION - 10);
+                verify(userService).update(author);
+            }
+
+            @Test
+            @SneakyThrows
+            public void deleteVote() {
+                verify(voteRepository).delete(vote);
             }
         }
 
@@ -579,6 +601,9 @@ public class QuestionServiceShould {
                 vote.setType("down");
                 given(voteRepository.findByQuestionIdAndVoterId(question.getId(), voter.getId())).willReturn(vote);
 
+                given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
+                given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
+
                 given(questionRepository.findById(question.getId())).willReturn(Optional.of(question));
 
                 cancelledScore = questionService.cancelVote(UserId.validated(voter.getId()), QuestionId.validated(question.getId()));
@@ -588,6 +613,24 @@ public class QuestionServiceShould {
             @SneakyThrows
             public void returnIncrementedQuestionScore() {
                 assertThat(cancelledScore.getScore()).isEqualTo(11);
+            }
+
+            @Test
+            public void incrementQuestionScoreAndUpdate() {
+                assertThat(question.getScore()).isEqualTo(11);
+                verify(questionRepository).save(question);
+            }
+
+            @Test
+            public void decrementVoterCastDownVotesAndUpdate() {
+                assertThat(voter.getCastDownVotes()).isEqualTo(9);
+                verify(userService).update(voter);
+            }
+
+            @Test
+            public void incrementAuthorReputationAndUpdate() {
+                assertThat(author.getReputation()).isEqualTo(AUTHOR_REPUTATION + 5);
+                verify(userService).update(author);
             }
 
             @Test

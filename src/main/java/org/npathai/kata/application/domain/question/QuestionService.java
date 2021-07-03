@@ -193,14 +193,20 @@ public class QuestionService {
         return score;
     }
 
-    public Score cancelVote(UserId voterId, QuestionId questionId) {
+    public Score cancelVote(UserId voterId, QuestionId questionId) throws BadRequestParametersException {
+        User voter = userService.getUserById(voterId);
         Question question = getQuestionExplosively(questionId);
         Vote vote = voteRepository.findByQuestionIdAndVoterId(question.getId(), voterId.getId());
+        User author = userService.getUserById(UserId.validated(question.getAuthorId()));
 
         if (VoteType.UP.val.equals(vote.getType())) {
             question.setScore(question.getScore() - 1);
+            voter.setCastUpVotes(voter.getCastUpVotes() - 1);
+            author.setReputation(author.getReputation() - 10);
         } else {
             question.setScore(question.getScore() + 1);
+            voter.setCastDownVotes(voter.getCastDownVotes() - 1);
+            author.setReputation(author.getReputation() + 5);
         }
 
         Score score = new Score();
@@ -208,6 +214,8 @@ public class QuestionService {
 
         questionRepository.save(question);
         voteRepository.delete(vote);
+        userService.update(voter);
+        userService.update(author);
 
         return score;
     }
