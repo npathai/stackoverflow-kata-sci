@@ -19,6 +19,7 @@ import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
+import org.npathai.kata.application.domain.question.usecase.PostQuestionUseCase;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.services.UnknownEntityException;
 import org.npathai.kata.application.domain.tag.dto.Tag;
@@ -84,6 +85,9 @@ public class QuestionServiceShould {
     VoteRepository voteRepository;
 
     @Mock
+    PostQuestionUseCase postQuestionUseCase;
+
+    @Mock
     IdGenerator voteIdGenerator;
 
     Clock clock;
@@ -96,97 +100,14 @@ public class QuestionServiceShould {
     @BeforeEach
     public void setUp() {
         clock = fixedClock();
-        questionService = new QuestionService(tagRepository, questionRepository,
-                answerRepository, userService, voteRepository, questionIdGenerator, tagIdGenerator, answerIdGenerator,
-                voteIdGenerator, clock);
+        questionService = new QuestionService(postQuestionUseCase, questionRepository,
+                answerRepository, userService, voteRepository, answerIdGenerator,
+                voteIdGenerator);
         request = PostQuestionRequest.valid(QUESTION_TITLE, QUESTION_BODY, QUESTION_TAGS);
     }
 
     private Clock fixedClock() {
         return Clock.fixed(Instant.now(), ZoneId.systemDefault());
-    }
-
-    @Nested
-    public class PostQuestionShould {
-
-        private Question question;
-        private List<Tag> tags;
-
-        @BeforeEach
-        public void setUp() {
-            given(questionIdGenerator.get()).willReturn(QUESTION_ID);
-
-            Tag javaTag = aTag("1", "java");
-            Tag kataTag = aTag("2", "kata");
-            tags = List.of(javaTag, kataTag);
-            given(tagRepository.findAllByName(QUESTION_TAGS)).willReturn(tags);
-        }
-
-        @Test
-        public void createQuestionWithGivenDetails() {
-            postQuestion();
-
-            assertThat(question.getTitle()).isEqualTo(QUESTION_TITLE);
-            assertThat(question.getBody()).isEqualTo(QUESTION_BODY);
-        }
-
-        @Test
-        public void usesExistingTags() {
-            postQuestion();
-
-            assertThat(question.getTags()).isEqualTo(tags);
-            verify(tagRepository, times(0)).save(any());
-        }
-
-        @Test
-        public void createMissingTags() {
-            given(tagRepository.findAllByName(QUESTION_TAGS)).willReturn(List.of(aTag("1", "java")));
-            given(tagIdGenerator.get()).willReturn("2");
-
-            postQuestion();
-            assertThat(question.getTags()).isEqualTo(tags);
-            verify(tagRepository).save(aTag("2", "kata"));
-        }
-
-        @Test
-        public void assignIdToQuestion() {
-            postQuestion();
-
-            assertThat(question.getId()).isEqualTo(QUESTION_ID);
-        }
-
-        @Test
-        public void assignCreatedAtAsCurrentTime() {
-            postQuestion();
-
-            assertThat(question.getCreatedAt()).isEqualTo(clock.millis());
-        }
-
-        @Test
-        public void savesQuestionToRepository() {
-            postQuestion();
-
-            verify(questionRepository).save(question);
-        }
-
-        @Test
-        public void assignAuthorIdToBeUserId() {
-            postQuestion();
-
-            assertThat(question.getAuthorId()).isEqualTo(USER_ID);
-        }
-
-        @SneakyThrows
-        private void postQuestion() {
-            question = questionService.post(UserId.validated(USER_ID), request);
-        }
-
-        private Tag aTag(String id, String name) {
-            Tag javaTag = new Tag();
-            javaTag.setId(id);
-            javaTag.setName(name);
-            return javaTag;
-        }
     }
 
     @Nested
