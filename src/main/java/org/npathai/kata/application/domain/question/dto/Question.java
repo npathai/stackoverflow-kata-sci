@@ -65,9 +65,11 @@ public class Question {
         if (VoteType.from(vote.getType()) == VoteType.UP) {
             setScore(getScore() - 1);
             voter.setCastUpVotes(voter.getCastUpVotes() - 1);
+            author.setReputation(author.getReputation() - 10);
         } else {
             voter.setCastDownVotes(voter.getCastDownVotes() - 1);
             setScore(getScore() + 1);
+            author.setReputation(author.getReputation() + 5);
         }
     }
 

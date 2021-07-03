@@ -34,12 +34,6 @@ public class QuestionCancelVotingUseCase {
 
         question.cancelVote(vote, author, voter);
 
-        if (VoteType.UP.val.equals(vote.getType())) {
-            author.setReputation(author.getReputation() - 10);
-        } else {
-            author.setReputation(author.getReputation() + 5);
-        }
-
         userService.update(voter);
         userService.update(author);
         questionRepository.save(question);
