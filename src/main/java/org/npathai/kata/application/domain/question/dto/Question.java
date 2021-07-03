@@ -40,6 +40,7 @@ public class Question {
 
         setScore(getScore() + 1);
         voter.setCastUpVotes(voter.getCastUpVotes() + 1);
+        author.setReputation(author.getReputation() + 10);
 
         return createVote(VoteType.UP, this, voter);
     }
@@ -55,6 +56,7 @@ public class Question {
 
         setScore(getScore() - 1);
         voter.setCastDownVotes(voter.getCastDownVotes() + 1);
+        author.setReputation(author.getReputation() - 5);
 
         return createVote(VoteType.DOWN, this, voter);
     }

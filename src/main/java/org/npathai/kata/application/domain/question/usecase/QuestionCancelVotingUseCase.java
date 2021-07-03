@@ -44,14 +44,13 @@ public class QuestionCancelVotingUseCase {
             author.setReputation(author.getReputation() + 5);
         }
 
-        Score score = new Score();
-        score.setScore(question.getScore());
-
         userService.update(voter);
         userService.update(author);
         questionRepository.save(question);
         voteRepository.delete(vote);
 
+        Score score = new Score();
+        score.setScore(question.getScore());
         return score;
     }
 

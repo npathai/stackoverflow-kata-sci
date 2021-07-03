@@ -45,20 +45,13 @@ public class QuestionVotingUseCase {
         }
         vote.setId(voteIdGenerator.get());
 
-        if (voteRequest.getType() == VoteType.UP) {
-            author.setReputation(author.getReputation() + 10);
-        } else {
-            author.setReputation(author.getReputation() - 5);
-        }
-
-        Score score = new Score();
-        score.setScore(question.getScore());
-
         userService.update(voter);
         userService.update(author);
         questionRepository.save(question);
         voteRepository.save(vote);
 
+        Score score = new Score();
+        score.setScore(question.getScore());
         return score;
     }
 
