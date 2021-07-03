@@ -45,10 +45,10 @@ public class QuestionCancelVotingUseCase {
         Score score = new Score();
         score.setScore(question.getScore());
 
-        questionRepository.save(question);
-        voteRepository.delete(vote);
         userService.update(voter);
         userService.update(author);
+        questionRepository.save(question);
+        voteRepository.delete(vote);
 
         return score;
     }

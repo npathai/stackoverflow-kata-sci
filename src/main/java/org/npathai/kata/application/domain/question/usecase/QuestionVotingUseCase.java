@@ -41,39 +41,49 @@ public class QuestionVotingUseCase {
             throw new ImpermissibleOperationException("Can't cast vote on own question");
         }
 
+        ensureReputation(voteRequest, voter);
+        Vote vote = createVote(voteRequest, question, voter);
+
+        if (voteRequest.getType() == VoteType.UP) {
+            question.setScore(question.getScore() + 1);
+            voter.setCastUpVotes(voter.getCastUpVotes() + 1);
+            author.setReputation(author.getReputation() + 10);
+        } else {
+            question.setScore(question.getScore() - 1);
+            voter.setCastDownVotes(voter.getCastDownVotes() + 1);
+            author.setReputation(author.getReputation() - 5);
+        }
+
         Score score = new Score();
+        score.setScore(question.getScore());
+
+        userService.update(voter);
+        userService.update(author);
+        questionRepository.save(question);
+        voteRepository.save(vote);
+
+        return score;
+    }
+
+    private void ensureReputation(VoteRequest voteRequest, User voter) throws InsufficientReputationException {
         if (voteRequest.getType() == VoteType.UP) {
             if (voter.getReputation() < 15) {
                 throw new InsufficientReputationException();
             }
-
-            score.setScore(question.getScore() + 1);
-            voter.setCastUpVotes(voter.getCastUpVotes() + 1);
-            author.setReputation(author.getReputation() + 10);
         } else {
             if (voter.getReputation() < 125) {
                 throw new InsufficientReputationException();
             }
-            voter.setCastDownVotes(voter.getCastDownVotes() + 1);
-            score.setScore(question.getScore() - 1);
-            author.setReputation(author.getReputation() - 5);
         }
+    }
 
-        userService.update(voter);
-        userService.update(author);
-
-        question.setScore(score.getScore());
-        questionRepository.save(question);
-
+    private Vote createVote(VoteRequest voteRequest, Question question, User voter) {
         Vote vote = new Vote();
         vote.setId(voteIdGenerator.get());
         vote.setQuestionId(question.getId());
         vote.setVoterId(voter.getId());
         vote.setType(voteRequest.getType().val);
-
-        voteRepository.save(vote);
-
-        return score;
+        return vote;
     }
 
     private Question getQuestionExplosively(QuestionId questionId) {
