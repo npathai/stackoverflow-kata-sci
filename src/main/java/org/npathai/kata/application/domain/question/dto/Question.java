@@ -2,11 +2,9 @@ package org.npathai.kata.application.domain.question.dto;
 
 import lombok.Data;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
-import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.dto.User;
-import org.npathai.kata.application.domain.vote.VoteRequest;
 import org.npathai.kata.application.domain.vote.VoteType;
 import org.npathai.kata.application.domain.vote.dto.Vote;
 
@@ -61,6 +59,14 @@ public class Question {
         return createVote(VoteType.DOWN, this, voter);
     }
 
+    public Vote vote(VoteType type, User author, User voter) throws ImpermissibleOperationException, InsufficientReputationException {
+        if (type == VoteType.UP) {
+            return upVote(author, voter);
+        } else {
+            return downVote(author, voter);
+        }
+    }
+
     public void cancelVote(Vote vote, User author, User voter) {
         if (VoteType.from(vote.getType()) == VoteType.UP) {
             setScore(getScore() - 1);
@@ -80,4 +86,5 @@ public class Question {
         vote.setType(voteType.val);
         return vote;
     }
+
 }

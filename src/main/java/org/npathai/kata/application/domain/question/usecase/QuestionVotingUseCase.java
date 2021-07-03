@@ -37,12 +37,7 @@ public class QuestionVotingUseCase {
         User voter = userService.getUserById(userId);
         User author = userService.getUserById(UserId.validated(question.getAuthorId()));
 
-        Vote vote;
-        if (voteRequest.getType() == VoteType.UP) {
-            vote = question.upVote(author, voter);
-        } else {
-            vote = question.downVote(author, voter);
-        }
+        Vote vote = question.vote(voteRequest.getType(), author, voter);
         vote.setId(voteIdGenerator.get());
 
         userService.update(voter);
