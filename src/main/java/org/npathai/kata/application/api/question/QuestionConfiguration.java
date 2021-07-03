@@ -6,10 +6,7 @@ import org.npathai.kata.application.api.validation.StringValidators;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
-import org.npathai.kata.application.domain.question.usecase.GetQuestionUseCase;
-import org.npathai.kata.application.domain.question.usecase.GetRecentQuestionsUseCase;
-import org.npathai.kata.application.domain.question.usecase.PostAnswerUseCase;
-import org.npathai.kata.application.domain.question.usecase.PostQuestionUseCase;
+import org.npathai.kata.application.domain.question.usecase.*;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.UserService;
@@ -47,16 +44,23 @@ public class QuestionConfiguration {
     }
 
     @Bean
+    public QuestionVotingUseCase createQuestionVotingUseCase(QuestionRepository questionRepository, VoteRepository voteRepository, UserService userService, IdGenerator voteIdGenerator) {
+        return new QuestionVotingUseCase(questionRepository, voteRepository, userService, voteIdGenerator);
+    }
+
+    @Bean
     public QuestionService createQuestionService(PostQuestionUseCase postQuestionUseCase,
                                                  GetRecentQuestionsUseCase getRecentQuestionsUseCase,
                                                  PostAnswerUseCase postAnswerUseCase,
                                                  GetQuestionUseCase getQuestionUseCase,
-                                                 QuestionRepository questionRepository,
-                                                 AnswerRepository answerRepository, UserService userService,
-                                                 VoteRepository voteRepository,
-                                                 IdGenerator voteIdGenerator) {
-        return new QuestionService(postQuestionUseCase, getRecentQuestionsUseCase, postAnswerUseCase, getQuestionUseCase, questionRepository, answerRepository, userService,
-                voteRepository, voteIdGenerator);
+                                                 QuestionVotingUseCase questionVotingUseCase) {
+
+        return new QuestionService(postQuestionUseCase,
+                getRecentQuestionsUseCase,
+                postAnswerUseCase,
+                getQuestionUseCase,
+                questionVotingUseCase
+        );
     }
 
     @Bean
