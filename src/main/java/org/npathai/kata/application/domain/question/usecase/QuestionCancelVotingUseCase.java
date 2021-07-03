@@ -32,14 +32,12 @@ public class QuestionCancelVotingUseCase {
         Vote vote = voteRepository.findByQuestionIdAndVoterId(question.getId(), voterId.getId());
         User author = userService.getUserById(UserId.validated(question.getAuthorId()));
 
-//        question.cancelVote(vote, author, voter);
+        question.cancelVote(vote, author, voter);
 
         if (VoteType.UP.val.equals(vote.getType())) {
-            question.setScore(question.getScore() - 1);
             voter.setCastUpVotes(voter.getCastUpVotes() - 1);
             author.setReputation(author.getReputation() - 10);
         } else {
-            question.setScore(question.getScore() + 1);
             voter.setCastDownVotes(voter.getCastDownVotes() - 1);
             author.setReputation(author.getReputation() + 5);
         }

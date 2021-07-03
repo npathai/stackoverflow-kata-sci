@@ -61,6 +61,14 @@ public class Question {
         return createVote(VoteType.DOWN, this, voter);
     }
 
+    public void cancelVote(Vote vote, User author, User voter) {
+        if (VoteType.from(vote.getType()) == VoteType.UP) {
+            setScore(getScore() - 1);
+        } else {
+            setScore(getScore() + 1);
+        }
+    }
+
     private Vote createVote(VoteType voteType, Question question, User voter) {
         Vote vote = new Vote();
         vote.setQuestionId(question.getId());
