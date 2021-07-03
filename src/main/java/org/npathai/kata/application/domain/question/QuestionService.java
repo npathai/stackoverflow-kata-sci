@@ -9,10 +9,10 @@ import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
+import org.npathai.kata.application.domain.question.usecase.GetRecentQuestionsUseCase;
 import org.npathai.kata.application.domain.question.usecase.PostQuestionUseCase;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.services.UnknownEntityException;
-import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.user.UserService;
@@ -23,10 +23,7 @@ import org.npathai.kata.application.domain.vote.VoteType;
 import org.npathai.kata.application.domain.vote.dto.Score;
 import org.npathai.kata.application.domain.vote.dto.Vote;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 
-import java.time.Clock;
 import java.util.List;
 
 public class QuestionService {
@@ -38,6 +35,7 @@ public class QuestionService {
     private final UserService userService;
     private final IdGenerator voteIdGenerator;
     private final PostQuestionUseCase postQuestionUseCase;
+    private final GetRecentQuestionsUseCase getRecentQuestionsUseCase;
 
     public QuestionService(PostQuestionUseCase postQuestionUseCase,
                            QuestionRepository questionRepository, AnswerRepository answerRepository,
@@ -50,6 +48,7 @@ public class QuestionService {
         this.voteRepository = voteRepository;
         this.answerIdGenerator = answerIdGenerator;
         this.voteIdGenerator = voteIdGenerator;
+        this.getRecentQuestionsUseCase = new GetRecentQuestionsUseCase(questionRepository);
     }
 
     public Question post(UserId userId, PostQuestionRequest validRequest) {
@@ -57,7 +56,7 @@ public class QuestionService {
     }
 
     public Page<Question> getRecentQuestions() {
-        return questionRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt")));
+        return getRecentQuestionsUseCase.getRecentQuestions();
     }
 
     public Answer postAnswer(UserId authorId, QuestionId questionId, PostAnswerRequest request) {
@@ -161,5 +160,4 @@ public class QuestionService {
 
         return score;
     }
-
 }

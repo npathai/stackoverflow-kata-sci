@@ -7,8 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
@@ -22,7 +20,6 @@ import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.question.usecase.PostQuestionUseCase;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.services.UnknownEntityException;
-import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.UserId;
@@ -33,7 +30,6 @@ import org.npathai.kata.application.domain.vote.VoteRequest;
 import org.npathai.kata.application.domain.vote.VoteType;
 import org.npathai.kata.application.domain.vote.dto.Score;
 import org.npathai.kata.application.domain.vote.dto.Vote;
-import org.springframework.data.domain.*;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -43,7 +39,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -108,46 +103,6 @@ public class QuestionServiceShould {
 
     private Clock fixedClock() {
         return Clock.fixed(Instant.now(), ZoneId.systemDefault());
-    }
-
-    @Nested
-    public class RecentQuestionsShould {
-
-        @Captor
-        ArgumentCaptor<PageRequest> captor;
-        private List<Question> questions;
-        private PageImpl<Question> questionPage;
-
-        @BeforeEach
-        public void setUp() {
-            questions = List.of(
-                    aQuestion("1").build(),
-                    aQuestion("2").build()
-            );
-
-            questionPage = new PageImpl<>(this.questions);
-        }
-
-        @Test
-        public void returnsPageContainingQuestions() {
-            given(questionRepository.findAll(any(Pageable.class))).willReturn(questionPage);
-
-            Page<Question> recentQuestionsPage = questionService.getRecentQuestions();
-
-            assertThat(recentQuestionsPage.getContent()).isEqualTo(questions);
-        }
-
-        @Test
-        public void returnTenQuestionsSortedInDescendingOrderOfCreationDate() {
-            given(questionRepository.findAll(any(Pageable.class))).willReturn(questionPage);
-
-            questionService.getRecentQuestions();
-
-            verify(questionRepository).findAll(captor.capture());
-            assertThat(captor.getValue().getPageNumber()).isEqualTo(0);
-            assertThat(captor.getValue().getPageSize()).isEqualTo(10);
-            assertThat(captor.getValue().getSort()).isEqualTo(Sort.by(Sort.Direction.DESC, "createdAt"));
-        }
     }
 
     @Nested
