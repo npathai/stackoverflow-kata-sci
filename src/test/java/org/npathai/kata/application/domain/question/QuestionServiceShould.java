@@ -12,16 +12,15 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
-import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.question.usecase.GetRecentQuestionsUseCase;
+import org.npathai.kata.application.domain.question.usecase.PostAnswerUseCase;
 import org.npathai.kata.application.domain.question.usecase.PostQuestionUseCase;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.services.UnknownEntityException;
-import org.npathai.kata.application.domain.tag.persistence.TagRepository;
 import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.user.UserService;
@@ -41,7 +40,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.npathai.kata.application.domain.tag.TagBuilder.aTag;
 import static org.npathai.kata.application.domain.user.UserBuilder.anUser;
@@ -58,24 +56,11 @@ public class QuestionServiceShould {
 
     @Mock
     QuestionRepository questionRepository;
-
-    @Mock
-    TagRepository tagRepository;
-
     @Mock
     AnswerRepository answerRepository;
 
     @Mock
     UserService userService;
-
-    @Mock
-    IdGenerator questionIdGenerator;
-
-    @Mock
-    IdGenerator tagIdGenerator;
-
-    @Mock
-    IdGenerator answerIdGenerator;
 
     @Mock
     VoteRepository voteRepository;
@@ -85,6 +70,9 @@ public class QuestionServiceShould {
 
     @Mock
     GetRecentQuestionsUseCase getRecentQuestionsUseCase;
+
+    @Mock
+    PostAnswerUseCase postAnswerUseCase;
 
     @Mock
     IdGenerator voteIdGenerator;
@@ -101,61 +89,15 @@ public class QuestionServiceShould {
         clock = fixedClock();
         questionService = new QuestionService(postQuestionUseCase,
                 getRecentQuestionsUseCase,
+                postAnswerUseCase,
                 questionRepository,
-                answerRepository, userService, voteRepository, answerIdGenerator,
+                answerRepository, userService, voteRepository,
                 voteIdGenerator);
         request = PostQuestionRequest.valid(QUESTION_TITLE, QUESTION_BODY, QUESTION_TAGS);
     }
 
     private Clock fixedClock() {
         return Clock.fixed(Instant.now(), ZoneId.systemDefault());
-    }
-
-    @Nested
-    public class PostAnswerShould {
-
-        private Question question;
-        private Answer answer;
-        private PostAnswerRequest postAnswerRequest;
-
-        @BeforeEach
-        public void setUp() {
-            postAnswerRequest = PostAnswerRequest.valid("Body");
-            given(answerIdGenerator.get()).willReturn(ANSWER_ID);
-
-            question = aQuestion(QUESTION_ID).build();
-            given(questionRepository.findById(QUESTION_ID)).willReturn(Optional.of(question));
-
-            answer = new Answer();
-            answer.setId(ANSWER_ID);
-            answer.setAuthorId(ANSWERER_ID);
-            answer.setQuestionId(QUESTION_ID);
-            answer.setBody("Body");
-        }
-
-        @Test
-        @SneakyThrows
-        public void returnCreatedAnswer() {
-            Answer postedAnswer = questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
-            assertThat(postedAnswer).isEqualTo(answer);
-        }
-
-        @Test
-        @SneakyThrows
-        public void saveAnswerToRepository() {
-            questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
-            verify(answerRepository).save(answer);
-        }
-
-        @Test
-        @SneakyThrows
-        public void incrementAnswerCount() {
-            questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
-            questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
-
-            assertThat(question.getAnswerCount()).isEqualTo(2);
-            verify(questionRepository, times(2)).save(question);
-        }
     }
 
     @Nested

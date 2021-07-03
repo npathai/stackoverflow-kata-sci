@@ -10,6 +10,7 @@ import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.question.usecase.GetRecentQuestionsUseCase;
+import org.npathai.kata.application.domain.question.usecase.PostAnswerUseCase;
 import org.npathai.kata.application.domain.question.usecase.PostQuestionUseCase;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.services.UnknownEntityException;
@@ -31,23 +32,23 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
     private final VoteRepository voteRepository;
-    private final IdGenerator answerIdGenerator;
     private final UserService userService;
     private final IdGenerator voteIdGenerator;
     private final PostQuestionUseCase postQuestionUseCase;
     private final GetRecentQuestionsUseCase getRecentQuestionsUseCase;
+    private final PostAnswerUseCase postAnswerUseCase;
 
     public QuestionService(PostQuestionUseCase postQuestionUseCase,
-                           GetRecentQuestionsUseCase getRecentQuestionsUseCase, QuestionRepository questionRepository, AnswerRepository answerRepository,
+                           GetRecentQuestionsUseCase getRecentQuestionsUseCase, PostAnswerUseCase postAnswerUseCase, QuestionRepository questionRepository, AnswerRepository answerRepository,
                            UserService userService, VoteRepository voteRepository,
-                           IdGenerator answerIdGenerator, IdGenerator voteIdGenerator) {
+                           IdGenerator voteIdGenerator) {
         this.postQuestionUseCase = postQuestionUseCase;
         this.getRecentQuestionsUseCase = getRecentQuestionsUseCase;
+        this.postAnswerUseCase = postAnswerUseCase;
         this.questionRepository = questionRepository;
         this.answerRepository = answerRepository;
         this.userService = userService;
         this.voteRepository = voteRepository;
-        this.answerIdGenerator = answerIdGenerator;
         this.voteIdGenerator = voteIdGenerator;
     }
 
@@ -60,19 +61,7 @@ public class QuestionService {
     }
 
     public Answer postAnswer(UserId authorId, QuestionId questionId, PostAnswerRequest request) {
-        Question question = getQuestionExplosively(questionId);
-        Answer answer = new Answer();
-        answer.setId(answerIdGenerator.get());
-        answer.setAuthorId(authorId.getId());
-        answer.setQuestionId(questionId.getId());
-        answer.setBody(request.getBody());
-
-        answerRepository.save(answer);
-
-        question.setAnswerCount(question.getAnswerCount() + 1);
-        questionRepository.save(question);
-
-        return answer;
+        return postAnswerUseCase.postAnswer(authorId, questionId, request);
     }
 
     public QuestionWithAnswers getQuestion(QuestionId questionId) {
@@ -160,4 +149,5 @@ public class QuestionService {
 
         return score;
     }
+
 }
