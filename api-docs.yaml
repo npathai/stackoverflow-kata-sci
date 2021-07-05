@@ -1,0 +1,342 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+paths:
+  /api/v1/u:
+    post:
+      tags:
+      - user-controller
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterUserRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/User'
+  /api/v1/q:
+    post:
+      tags:
+      - question-controller
+      operationId: createQuestion
+      parameters:
+      - name: userId
+        in: header
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostQuestionRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Question'
+  /api/v1/q/{questionId}/votes:
+    post:
+      tags:
+      - vote-controller
+      operationId: voteQuestion
+      parameters:
+      - name: userId
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: questionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoteRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Score'
+    delete:
+      tags:
+      - vote-controller
+      operationId: cancelVote
+      parameters:
+      - name: userId
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: questionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Score'
+  /api/v1/q/{questionId}/a:
+    post:
+      tags:
+      - question-controller
+      operationId: createAnswer
+      parameters:
+      - name: userId
+        in: header
+        required: true
+        schema:
+          type: string
+      - name: questionId
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostAnswerRequestPayload'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/Answer'
+  /api/v1/u/{userId}:
+    get:
+      tags:
+      - user-controller
+      operationId: getById
+      parameters:
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/User'
+  /api/v1/q/{questionId}:
+    get:
+      tags:
+      - question-controller
+      operationId: getQuestionById
+      parameters:
+      - name: questionId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/QuestionWithAnswers'
+  /api/v1/q/recent:
+    get:
+      tags:
+      - question-controller
+      operationId: recentQuestions
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PageQuestion'
+components:
+  schemas:
+    RegisterUserRequestPayload:
+      type: object
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+        email:
+          type: string
+        reputation:
+          type: integer
+          format: int64
+        castUpVotes:
+          type: integer
+          format: int32
+        castDownVotes:
+          type: integer
+          format: int32
+    PostQuestionRequestPayload:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        createdAt:
+          type: integer
+          format: int64
+        authorId:
+          type: string
+        answerCount:
+          type: integer
+          format: int32
+        score:
+          type: integer
+          format: int32
+    Tag:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    VoteRequestPayload:
+      type: object
+      properties:
+        type:
+          type: string
+    Score:
+      type: object
+      properties:
+        score:
+          type: integer
+          format: int32
+    PostAnswerRequestPayload:
+      type: object
+      properties:
+        body:
+          type: string
+    Answer:
+      type: object
+      properties:
+        id:
+          type: string
+        body:
+          type: string
+        authorId:
+          type: string
+        questionId:
+          type: string
+    QuestionWithAnswers:
+      type: object
+      properties:
+        question:
+          $ref: '#/components/schemas/Question'
+        answers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Answer'
+    PageQuestion:
+      type: object
+      properties:
+        totalElements:
+          type: integer
+          format: int64
+        totalPages:
+          type: integer
+          format: int32
+        size:
+          type: integer
+          format: int32
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+        number:
+          type: integer
+          format: int32
+        sort:
+          $ref: '#/components/schemas/Sort'
+        first:
+          type: boolean
+        last:
+          type: boolean
+        numberOfElements:
+          type: integer
+          format: int32
+        pageable:
+          $ref: '#/components/schemas/Pageable'
+        empty:
+          type: boolean
+    Pageable:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: '#/components/schemas/Sort'
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        unpaged:
+          type: boolean
+        paged:
+          type: boolean
+    Sort:
+      type: object
+      properties:
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+        empty:
+          type: boolean
