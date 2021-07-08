@@ -3,6 +3,7 @@ package org.npathai.kata.application.domain.question;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
+import org.npathai.kata.application.domain.question.answer.dto.AnswerId;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
 import org.npathai.kata.application.domain.question.dto.Question;
@@ -218,5 +219,13 @@ public class QuestionService {
         userService.update(author);
 
         return score;
+    }
+
+    public Score voteAnswer(UserId validated, AnswerId validated1, VoteRequest request) throws InsufficientReputationException, ImpermissibleOperationException {
+        throw new UnsupportedOperationException();
+    }
+
+    public Score cancelAnswerVote(UserId validated, AnswerId validated1) {
+        throw new UnsupportedOperationException();
     }
 }

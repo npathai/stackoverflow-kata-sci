@@ -5,15 +5,18 @@ import org.npathai.kata.application.api.validation.BadRequestParametersException
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.QuestionService;
+import org.npathai.kata.application.domain.question.answer.dto.Answer;
+import org.npathai.kata.application.domain.question.answer.dto.AnswerId;
 import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.UserId;
+import org.npathai.kata.application.domain.vote.VoteRequest;
 import org.npathai.kata.application.domain.vote.dto.Score;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("api/v1/q")
+@RequestMapping("api/v1/")
 public class VoteController {
 
     private final QuestionService questionService;
@@ -24,7 +27,7 @@ public class VoteController {
         this.validator = validator;
     }
 
-    @PostMapping("/{questionId}/votes")
+    @PostMapping("/q/{questionId}/votes")
     public ResponseEntity<Score> voteQuestion(@RequestHeader String userId, @PathVariable String questionId,
                                               @RequestBody VoteRequestPayload payload) {
         try {
@@ -38,10 +41,34 @@ public class VoteController {
         }
     }
 
-    @DeleteMapping("/{questionId}/votes")
+    @DeleteMapping("/q/{questionId}/votes")
     public ResponseEntity<Score> cancelVote(@RequestHeader String userId, @PathVariable String questionId) {
         try {
             Score score = questionService.cancelVote(UserId.validated(userId), QuestionId.validated(questionId));
+            return ResponseEntity.ok(score);
+        } catch (BadRequestParametersException ex) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PostMapping("/a/{answerId}/votes")
+    public ResponseEntity<Score> voteAnswer(@RequestHeader String userId, @PathVariable String answerId,
+                                            @RequestBody VoteRequestPayload payload) {
+        try {
+            VoteRequest request = validator.validate(payload);
+            Score score = questionService.voteAnswer(UserId.validated(userId), AnswerId.validated(answerId), request);
+            return ResponseEntity.ok(score);
+        } catch (BadRequestParametersException | ImpermissibleOperationException ex) {
+            return ResponseEntity.badRequest().build();
+        } catch (InsufficientReputationException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    @DeleteMapping("/a/{answerId}/votes")
+    public ResponseEntity<Score> cancelAnswerVote(@RequestHeader String userId, @PathVariable String answerId) {
+        try {
+            Score score = questionService.cancelAnswerVote(UserId.validated(userId), AnswerId.validated(answerId));
             return ResponseEntity.ok(score);
         } catch (BadRequestParametersException ex) {
             return ResponseEntity.badRequest().build();
