@@ -14,8 +14,7 @@ public class Vote {
     @Id
     private String id;
 
-    @JoinColumn(table = "questions", name = "id")
-    private String questionId;
+    private String votableId;
 
     @JoinColumn(table = "users", name = "id")
     private String voterId;

@@ -1,5 +1,6 @@
 package org.npathai.kata.application.domain.question;
 
+import lombok.SneakyThrows;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
@@ -28,10 +29,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import java.time.Clock;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class QuestionService {
@@ -185,7 +183,7 @@ public class QuestionService {
 
         Vote vote = new Vote();
         vote.setId(voteIdGenerator.get());
-        vote.setQuestionId(question.getId());
+        vote.setVotableId(question.getId());
         vote.setVoterId(voter.getId());
         vote.setType(voteRequest.getType().val);
 
@@ -197,7 +195,7 @@ public class QuestionService {
     public Score cancelVote(UserId voterId, QuestionId questionId) throws BadRequestParametersException {
         User voter = userService.getUserById(voterId);
         Question question = getQuestionExplosively(questionId);
-        Vote vote = voteRepository.findByQuestionIdAndVoterId(question.getId(), voterId.getId());
+        Vote vote = voteRepository.findByVotableIdAndVoterId(question.getId(), voterId.getId());
         User author = userService.getUserById(UserId.validated(question.getAuthorId()));
 
         if (VoteType.UP.val.equals(vote.getType())) {
@@ -221,11 +219,74 @@ public class QuestionService {
         return score;
     }
 
-    public Score voteAnswer(UserId validated, AnswerId validated1, VoteRequest request) throws InsufficientReputationException, ImpermissibleOperationException {
-        throw new UnsupportedOperationException();
+    public Score voteAnswer(UserId voterId, AnswerId answerId, VoteRequest request) throws InsufficientReputationException, ImpermissibleOperationException, BadRequestParametersException {
+        Optional<Answer> maybeAnswer = answerRepository.findById(answerId.getId());
+        Answer answer = maybeAnswer.get();
+        User author = userService.getUserById(UserId.validated(answer.getAuthorId()));
+        User voter = userService.getUserById(voterId);
+
+        if (voter.equals(author)) {
+            throw new ImpermissibleOperationException("Can't vote on own answer");
+        }
+
+        if (request.getType() == VoteType.UP) {
+            if (voter.getReputation() < 15) {
+                throw new InsufficientReputationException();
+            }
+            answer.setScore(answer.getScore() + 1);
+            author.setReputation(author.getReputation() + 10);
+            voter.setCastUpVotes(voter.getCastUpVotes() + 1);
+        } else {
+            if (voter.getReputation() < 125) {
+                throw new InsufficientReputationException();
+            }
+            answer.setScore(answer.getScore() - 1);
+            author.setReputation(author.getReputation() - 5);
+            voter.setCastDownVotes(voter.getCastDownVotes() + 1);
+            voter.setReputation(voter.getReputation() - 1);
+        }
+
+        userService.update(voter);
+        userService.update(author);
+        answerRepository.save(answer);
+
+        Vote vote = new Vote();
+        vote.setId(voteIdGenerator.get());
+        vote.setVotableId(answer.getId());
+        vote.setVoterId(voter.getId());
+        vote.setType(request.getType().val);
+        voteRepository.save(vote);
+
+        Score score = new Score();
+        score.setScore(answer.getScore());
+        return score;
     }
 
-    public Score cancelAnswerVote(UserId validated, AnswerId validated1) {
-        throw new UnsupportedOperationException();
+    @SneakyThrows
+    public Score cancelAnswerVote(UserId voterId, AnswerId answerId) {
+        Answer answer = answerRepository.findById(answerId.getId()).get();
+        User voter = userService.getUserById(voterId);
+        User author = userService.getUserById(UserId.validated(answer.getAuthorId()));
+        Vote vote = voteRepository.findByVotableIdAndVoterId(answer.getId(), voter.getId());
+
+        if (VoteType.UP.val.equals(vote.getType())) {
+            voter.setCastUpVotes(voter.getCastUpVotes() - 1);
+            author.setReputation(author.getReputation() - 10);
+            answer.setScore(answer.getScore() - 1);
+        } else {
+            voter.setCastDownVotes(voter.getCastDownVotes() - 1);
+            author.setReputation(author.getReputation() + 10);
+            answer.setScore(answer.getScore() + 1);
+            voter.setReputation(voter.getReputation() + 1);
+        }
+
+        userService.update(author);
+        userService.update(voter);
+        answerRepository.save(answer);
+        voteRepository.delete(vote);
+
+        Score score = new Score();
+        score.setScore(answer.getScore());
+        return score;
     }
 }
