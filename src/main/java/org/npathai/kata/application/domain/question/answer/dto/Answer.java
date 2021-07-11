@@ -17,4 +17,5 @@ public class Answer {
     private String authorId;
     @JoinColumn(table = "questions", name = "id")
     private String questionId;
+    private int score;
 }
