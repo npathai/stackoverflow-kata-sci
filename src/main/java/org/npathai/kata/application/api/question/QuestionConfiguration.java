@@ -59,19 +59,38 @@ public class QuestionConfiguration {
     }
 
     @Bean
+    public AnswerVotingUseCase createAnswerVotingUseCase(AnswerRepository answerRepository,
+                                                         VoteRepository voteRepository,
+                                                         IdGenerator voteIdGenerator,
+                                                         UserService userService) {
+        return new AnswerVotingUseCase(answerRepository, voteRepository, voteIdGenerator, userService);
+    }
+
+    @Bean
+    public AnswerCancelVotingUseCase createAnswerCancelVotingUseCase(AnswerRepository answerRepository,
+                                                                     VoteRepository voteRepository,
+                                                                     UserService userService) {
+        return new AnswerCancelVotingUseCase(answerRepository, voteRepository, userService);
+    }
+
+    @Bean
     public QuestionService createQuestionService(PostQuestionUseCase postQuestionUseCase,
                                                  GetRecentQuestionsUseCase getRecentQuestionsUseCase,
                                                  PostAnswerUseCase postAnswerUseCase,
                                                  GetQuestionUseCase getQuestionUseCase,
                                                  QuestionVotingUseCase questionVotingUseCase,
-                                                 QuestionCancelVotingUseCase questionCancelVotingUseCase) {
+                                                 QuestionCancelVotingUseCase questionCancelVotingUseCase,
+                                                 AnswerVotingUseCase answerVotingUseCase,
+                                                 AnswerCancelVotingUseCase answerCancelVotingUseCase) {
 
         return new QuestionService(postQuestionUseCase,
                 getRecentQuestionsUseCase,
                 postAnswerUseCase,
                 getQuestionUseCase,
                 questionVotingUseCase,
-                questionCancelVotingUseCase
+                questionCancelVotingUseCase,
+                answerVotingUseCase,
+                answerCancelVotingUseCase
         );
     }
 
