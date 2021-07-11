@@ -73,7 +73,7 @@ public class QuestionVotingUseCase {
     private Vote createVote(VoteRequest voteRequest, Question question, User voter) {
         Vote vote = new Vote();
         vote.setId(voteIdGenerator.get());
-        vote.setQuestionId(question.getId());
+        vote.setVotableId(question.getId());
         vote.setVoterId(voter.getId());
         vote.setType(voteRequest.getType().val);
         return vote;

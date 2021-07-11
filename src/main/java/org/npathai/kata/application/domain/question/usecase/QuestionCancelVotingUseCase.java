@@ -29,7 +29,7 @@ public class QuestionCancelVotingUseCase {
     public Score cancelVote(UserId voterId, QuestionId questionId) throws BadRequestParametersException {
         User voter = userService.getUserById(voterId);
         Question question = getQuestionExplosively(questionId);
-        Vote vote = voteRepository.findByQuestionIdAndVoterId(question.getId(), voterId.getId());
+        Vote vote = voteRepository.findByVotableIdAndVoterId(question.getId(), voterId.getId());
         User author = userService.getUserById(UserId.validated(question.getAuthorId()));
 
         if (VoteType.UP.val.equals(vote.getType())) {
