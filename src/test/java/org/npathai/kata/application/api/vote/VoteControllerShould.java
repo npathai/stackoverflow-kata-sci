@@ -139,7 +139,7 @@ public class VoteControllerShould {
             given(questionService.voteAnswer(UserId.validated(USER_ID), AnswerId.validated(ANSWER_ID), request))
                     .willReturn(score);
 
-            ResponseEntity<Score> responseEntity = voteController.voteAnswer(USER_ID, ANSWER_ID, payload);
+            ResponseEntity<Score> responseEntity = voteController.voteAnswer(USER_ID, QUESTION_ID, ANSWER_ID, payload);
 
             assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(responseEntity.getBody()).isSameAs(score);
@@ -150,7 +150,7 @@ public class VoteControllerShould {
         public void return400BadRequestWhenPayloadIsInvalid() {
             given(validator.validate(payload)).willThrow(BadRequestParametersException.class);
 
-            ResponseEntity<Score> response = voteController.voteAnswer(USER_ID, ANSWER_ID, payload);
+            ResponseEntity<Score> response = voteController.voteAnswer(USER_ID, QUESTION_ID, ANSWER_ID, payload);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         }
@@ -162,7 +162,7 @@ public class VoteControllerShould {
             given(questionService.voteAnswer(UserId.validated(USER_ID), AnswerId.validated(ANSWER_ID), request))
                     .willThrow(ImpermissibleOperationException.class);
 
-            ResponseEntity<Score> response = voteController.voteAnswer(USER_ID, ANSWER_ID, payload);
+            ResponseEntity<Score> response = voteController.voteAnswer(USER_ID, QUESTION_ID, ANSWER_ID, payload);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         }
@@ -174,7 +174,7 @@ public class VoteControllerShould {
             given(questionService.voteAnswer(UserId.validated(USER_ID), AnswerId.validated(ANSWER_ID), request))
                     .willThrow(InsufficientReputationException.class);
 
-            ResponseEntity<Score> response = voteController.voteAnswer(USER_ID, ANSWER_ID, payload);
+            ResponseEntity<Score> response = voteController.voteAnswer(USER_ID, QUESTION_ID, ANSWER_ID, payload);
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
         }
@@ -185,7 +185,7 @@ public class VoteControllerShould {
             given(questionService.cancelAnswerVote(UserId.validated(USER_ID), AnswerId.validated(ANSWER_ID)))
                     .willReturn(score);
 
-            ResponseEntity<Score> response = voteController.cancelAnswerVote(USER_ID, ANSWER_ID);
+            ResponseEntity<Score> response = voteController.cancelAnswerVote(USER_ID, QUESTION_ID, ANSWER_ID);
 
             assertThat(response.getBody()).isSameAs(score);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -194,7 +194,7 @@ public class VoteControllerShould {
         @Test
         @SneakyThrows
         public void returns400BadRequestWhenQuestionIdIsInvalid() {
-            ResponseEntity<Score> response = voteController.cancelAnswerVote("", "");
+            ResponseEntity<Score> response = voteController.cancelAnswerVote("",  "", "");
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         }

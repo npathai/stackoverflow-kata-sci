@@ -51,9 +51,9 @@ public class VoteController {
         }
     }
 
-    @PostMapping("/a/{answerId}/votes")
-    public ResponseEntity<Score> voteAnswer(@RequestHeader String userId, @PathVariable String answerId,
-                                            @RequestBody VoteRequestPayload payload) {
+    @PostMapping("/q/{questionId}/a/{answerId}/votes")
+    public ResponseEntity<Score> voteAnswer(@RequestHeader String userId, @PathVariable String questionId,
+                                            @PathVariable String answerId, @RequestBody VoteRequestPayload payload) {
         try {
             VoteRequest request = validator.validate(payload);
             Score score = questionService.voteAnswer(UserId.validated(userId), AnswerId.validated(answerId), request);
@@ -65,8 +65,9 @@ public class VoteController {
         }
     }
 
-    @DeleteMapping("/a/{answerId}/votes")
-    public ResponseEntity<Score> cancelAnswerVote(@RequestHeader String userId, @PathVariable String answerId) {
+    @DeleteMapping("/q/{questionId}/a/{answerId}/votes")
+    public ResponseEntity<Score> cancelAnswerVote(@RequestHeader String userId, @PathVariable String questionId,
+                                                  @PathVariable String answerId) {
         try {
             Score score = questionService.cancelAnswerVote(UserId.validated(userId), AnswerId.validated(answerId));
             return ResponseEntity.ok(score);
