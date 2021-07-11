@@ -14,8 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.npathai.kata.acceptance.question.dsl.QuestionDsl.QUESTION_BASE_URL;
 
 public class AnswerDsl {
-    static final String ANSWER_BASE_URL = "/api/v1/a";
-
     private final TestRestTemplate restTemplate;
 
     public AnswerDsl(TestRestTemplate restTemplate) {
@@ -118,7 +116,7 @@ public class AnswerDsl {
 
             HttpEntity<VoteRequest> request = new HttpEntity<>(voteRequest, headers);
 
-            return restTemplate.exchange(ANSWER_BASE_URL + "/" + answerId + "/votes", HttpMethod.POST,
+            return restTemplate.exchange(QUESTION_BASE_URL + "/" + questionId + "/a/" + answerId + "/votes", HttpMethod.POST,
                     request, new ParameterizedTypeReference<>() {});
         }
     }
