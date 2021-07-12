@@ -1,5 +1,6 @@
 package org.npathai.kata.application.domain.question.usecase;
 
+import lombok.val;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.QuestionId;
@@ -48,15 +49,6 @@ public class QuestionVotingUseCase {
         Score score = new Score();
         score.setScore(question.getScore());
         return score;
-    }
-
-    private Vote createVote(VoteRequest voteRequest, Question question, User voter) {
-        Vote vote = new Vote();
-        vote.setId(voteIdGenerator.get());
-        vote.setVotableId(question.getId());
-        vote.setVoterId(voter.getId());
-        vote.setType(voteRequest.getType().val);
-        return vote;
     }
 
     private Question getQuestionExplosively(QuestionId questionId) {
