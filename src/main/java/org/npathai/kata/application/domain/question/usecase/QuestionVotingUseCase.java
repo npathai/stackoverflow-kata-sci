@@ -50,6 +50,15 @@ public class QuestionVotingUseCase {
         return score;
     }
 
+    private Vote createVote(VoteRequest voteRequest, Question question, User voter) {
+        Vote vote = new Vote();
+        vote.setId(voteIdGenerator.get());
+        vote.setVotableId(question.getId());
+        vote.setVoterId(voter.getId());
+        vote.setType(voteRequest.getType().val);
+        return vote;
+    }
+
     private Question getQuestionExplosively(QuestionId questionId) {
         return questionRepository.findById(questionId.getId())
                 .orElseThrow(UnknownEntityException::new);

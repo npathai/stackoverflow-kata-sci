@@ -9,6 +9,7 @@ public final class AnswerBuilder {
     private String body;
     private String authorId;
     private String questionId;
+    private int score;
 
     private AnswerBuilder() {
         int random = new Random().nextInt(Integer.MAX_VALUE);
@@ -42,12 +43,18 @@ public final class AnswerBuilder {
         return this;
     }
 
+    public AnswerBuilder withScore(int score) {
+        this.score = score;
+        return this;
+    }
+
     public Answer build() {
         Answer answer = new Answer();
         answer.setId(id);
         answer.setBody(body);
         answer.setAuthorId(authorId);
         answer.setQuestionId(questionId);
+        answer.setScore(score);
         return answer;
     }
 }

@@ -79,7 +79,7 @@ public class AnswerVotingFeatureShould extends AcceptanceTestBase {
     @VotingScenarioAcceptanceTest
     @DisplayName("update original poster reputation")
     public void updateOriginalPosterReputation() {
-        User originalPoster = userDsl.getUserById(ORIGINAL_POSTER_ID).exec();
+        User originalPoster = userDsl.getUserById(ANSWERER_ID).exec();
 
         assertThat(originalPoster.getReputation()).isEqualTo(3015);
     }
@@ -108,20 +108,20 @@ public class AnswerVotingFeatureShould extends AcceptanceTestBase {
                 .onAnswer(questionId, answerId)
                 .execReturningResponseEntity();
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(questionDsl.getQuestionById(questionId).exec().getAnswers().get(0).getScore()).isEqualTo(0);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(questionDsl.getQuestionById(questionId).exec().getAnswers().get(0).getScore()).isEqualTo(1);
     }
 
     @VotingScenarioAcceptanceTest
     @DisplayName("not allow original poster cast 👍 on own answer")
     public void notAllowOriginalPosterToVoteOnOwnAnswer() {
         ResponseEntity<Score> response = answerDsl.anUpVote()
-                .byUser(ORIGINAL_POSTER_ID)
+                .byUser(ANSWERER_ID)
                 .onAnswer(questionId, answerId)
                 .execReturningResponseEntity();
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(questionDsl.getQuestionById(questionId).exec().getAnswers().get(0).getScore()).isEqualTo(0);
+        assertThat(questionDsl.getQuestionById(questionId).exec().getAnswers().get(0).getScore()).isEqualTo(1);
     }
 
     @VotingScenarioAcceptanceTest

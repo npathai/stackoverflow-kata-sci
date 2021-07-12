@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.npathai.kata.acceptance.question.dsl.QuestionDsl.QUESTION_BASE_URL;
 
 public class AnswerDsl {
-
     private final TestRestTemplate restTemplate;
 
     public AnswerDsl(TestRestTemplate restTemplate) {
