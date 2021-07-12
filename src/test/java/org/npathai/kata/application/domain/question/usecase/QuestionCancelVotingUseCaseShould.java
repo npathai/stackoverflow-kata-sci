@@ -78,9 +78,9 @@ class QuestionCancelVotingUseCaseShould {
             vote = new Vote();
             vote.setId("1");
             vote.setVoterId(voter.getId());
-            vote.setQuestionId(question.getId());
+            vote.setVotableId(question.getId());
             vote.setType("up");
-            given(voteRepository.findByQuestionIdAndVoterId(question.getId(), voter.getId())).willReturn(vote);
+            given(voteRepository.findByVotableIdAndVoterId(question.getId(), voter.getId())).willReturn(vote);
 
             given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
             given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);
@@ -133,9 +133,9 @@ class QuestionCancelVotingUseCaseShould {
             vote = new Vote();
             vote.setId("1");
             vote.setVoterId(voter.getId());
-            vote.setQuestionId(question.getId());
+            vote.setVotableId(question.getId());
             vote.setType("down");
-            given(voteRepository.findByQuestionIdAndVoterId(question.getId(), voter.getId())).willReturn(vote);
+            given(voteRepository.findByVotableIdAndVoterId(question.getId(), voter.getId())).willReturn(vote);
 
             given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
             given(userService.getUserById(UserId.validated(author.getId()))).willReturn(author);

@@ -129,7 +129,7 @@ public class QuestionVotingUseCaseShould {
         public void savesVoteInRepository() {
             Vote expectedVote = new Vote();
             expectedVote.setId(voteId);
-            expectedVote.setQuestionId(question.getId());
+            expectedVote.setVotableId(question.getId());
             expectedVote.setVoterId(voter.getId());
             expectedVote.setType("up");
 
@@ -229,7 +229,7 @@ public class QuestionVotingUseCaseShould {
         public void savesVoteInRepository() {
             Vote expectedVote = new Vote();
             expectedVote.setId(voteId);
-            expectedVote.setQuestionId(question.getId());
+            expectedVote.setVotableId(question.getId());
             expectedVote.setVoterId(voter.getId());
             expectedVote.setType("down");
 

@@ -30,6 +30,18 @@ public class Question {
     private int answerCount;
     private int score;
 
+    public Vote vote(VoteType type, User author, User voter) throws ImpermissibleOperationException, InsufficientReputationException {
+        if (voter.equals(author)) {
+            throw new ImpermissibleOperationException("Can't cast vote on own question");
+        }
+
+        if (type == VoteType.UP) {
+            return upVote(author, voter);
+        } else {
+            return downVote(author, voter);
+        }
+    }
+
     private Vote upVote(User author, User voter) throws InsufficientReputationException {
         if (!voter.hasReputationToUpVote()) {
             throw new InsufficientReputationException();
@@ -52,19 +64,6 @@ public class Question {
         author.decrementReputationBy(DOWN_VOTE_REP_LOSS);
 
         return aVote(VoteType.DOWN, voter);
-    }
-
-
-    public Vote vote(VoteType type, User author, User voter) throws ImpermissibleOperationException, InsufficientReputationException {
-        if (voter.equals(author)) {
-            throw new ImpermissibleOperationException("Can't cast vote on own question");
-        }
-
-        if (type == VoteType.UP) {
-            return upVote(author, voter);
-        } else {
-            return downVote(author, voter);
-        }
     }
 
     public void cancelVote(Vote vote, User author, User voter) {

@@ -41,36 +41,13 @@ public class AnswerVotingUseCase {
         User author = userService.getUserById(UserId.validated(answer.getAuthorId()));
         User voter = userService.getUserById(voterId);
 
-        if (voter.equals(author)) {
-            throw new ImpermissibleOperationException("Can't vote on own answer");
-        }
-
-        if (request.getType() == VoteType.UP) {
-            if (voter.getReputation() < 15) {
-                throw new InsufficientReputationException();
-            }
-            answer.setScore(answer.getScore() + 1);
-            author.setReputation(author.getReputation() + 10);
-            voter.setCastUpVotes(voter.getCastUpVotes() + 1);
-        } else {
-            if (voter.getReputation() < 125) {
-                throw new InsufficientReputationException();
-            }
-            answer.setScore(answer.getScore() - 1);
-            author.setReputation(author.getReputation() - 5);
-            voter.setCastDownVotes(voter.getCastDownVotes() + 1);
-            voter.setReputation(voter.getReputation() - 1);
-        }
+        Vote vote = answer.vote(author, voter, request.getType());
+        vote.setId(voteIdGenerator.get());
 
         userService.update(voter);
         userService.update(author);
         answerRepository.save(answer);
 
-        Vote vote = new Vote();
-        vote.setId(voteIdGenerator.get());
-        vote.setVotableId(answer.getId());
-        vote.setVoterId(voter.getId());
-        vote.setType(request.getType().val);
         voteRepository.save(vote);
 
         Score score = new Score();
