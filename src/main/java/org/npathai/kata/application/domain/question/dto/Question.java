@@ -89,7 +89,7 @@ public class Question {
 
     private Vote aVote(VoteType voteType, User voter) {
         Vote vote = new Vote();
-        vote.setQuestionId(getId());
+        vote.setVotableId(getId());
         vote.setVoterId(voter.getId());
         vote.setType(voteType.val);
         return vote;
