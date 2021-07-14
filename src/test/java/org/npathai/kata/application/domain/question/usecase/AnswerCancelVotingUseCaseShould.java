@@ -91,7 +91,7 @@ public class AnswerCancelVotingUseCaseShould {
             given(userService.getUserById(UserId.validated(answerAuthor.getId()))).willReturn(answerAuthor);
             given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
 
-            cancelledScore = useCase.cancelAnswerVote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()));
+            cancelledScore = useCase.cancelVote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()));
         }
 
         @Test
@@ -151,7 +151,7 @@ public class AnswerCancelVotingUseCaseShould {
             given(userService.getUserById(UserId.validated(answerAuthor.getId()))).willReturn(answerAuthor);
             given(userService.getUserById(UserId.validated(voter.getId()))).willReturn(voter);
 
-            cancelledScore = useCase.cancelAnswerVote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()));
+            cancelledScore = useCase.cancelVote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()));
         }
 
         @Test
@@ -174,7 +174,7 @@ public class AnswerCancelVotingUseCaseShould {
 
         @Test
         public void incrementAuthorReputationAndUpdate() {
-            assertThat(answerAuthor.getReputation()).isEqualTo(ANSWER_AUTHOR_INITIAL_REPUTATION + 10);
+            assertThat(answerAuthor.getReputation()).isEqualTo(ANSWER_AUTHOR_INITIAL_REPUTATION + 5);
             verify(userService).update(answerAuthor);
         }
 

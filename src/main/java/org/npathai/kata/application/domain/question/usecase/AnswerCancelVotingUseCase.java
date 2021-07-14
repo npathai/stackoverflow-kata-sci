@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.dto.AnswerId;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
-import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.user.UserService;
 import org.npathai.kata.application.domain.user.dto.User;
@@ -28,22 +27,13 @@ public class AnswerCancelVotingUseCase {
     }
 
     @SneakyThrows
-    public Score cancelAnswerVote(UserId voterId, AnswerId answerId) {
+    public Score cancelVote(UserId voterId, AnswerId answerId) {
         Answer answer = answerRepository.findById(answerId.getId()).get();
         User voter = userService.getUserById(voterId);
         User author = userService.getUserById(UserId.validated(answer.getAuthorId()));
         Vote vote = voteRepository.findByVotableIdAndVoterId(answer.getId(), voter.getId());
 
-        if (VoteType.UP.val.equals(vote.getType())) {
-            voter.setCastUpVotes(voter.getCastUpVotes() - 1);
-            author.setReputation(author.getReputation() - 10);
-            answer.setScore(answer.getScore() - 1);
-        } else {
-            voter.setCastDownVotes(voter.getCastDownVotes() - 1);
-            author.setReputation(author.getReputation() + 10);
-            answer.setScore(answer.getScore() + 1);
-            voter.setReputation(voter.getReputation() + 1);
-        }
+        answer.cancelVote(vote, author, voter);
 
         userService.update(author);
         userService.update(voter);

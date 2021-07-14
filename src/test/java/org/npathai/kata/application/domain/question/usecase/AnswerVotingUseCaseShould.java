@@ -109,14 +109,14 @@ public class AnswerVotingUseCaseShould {
             @Test
             @SneakyThrows
             public void returnIncrementedAnswerScore() {
-                Score score = useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
+                Score score = useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
                 assertThat(score.getScore()).isEqualTo(ANSWER_INITIAL_SCORE + 1);
             }
 
             @Test
             @SneakyThrows
             public void incrementScoreOfAnswer() {
-                useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
+                useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
                 assertThat(answer.getScore()).isEqualTo(ANSWER_INITIAL_SCORE + 1);
                 verify(answerRepository).save(answer);
             }
@@ -124,7 +124,7 @@ public class AnswerVotingUseCaseShould {
             @Test
             @SneakyThrows
             public void incrementAnswerAuthorReputation() {
-                useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
+                useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
                 assertThat(answerAuthor.getReputation()).isEqualTo(ANSWER_AUTHOR_INITIAL_REPUTATION + 10);
                 verify(userService).update(answerAuthor);
             }
@@ -132,7 +132,7 @@ public class AnswerVotingUseCaseShould {
             @Test
             @SneakyThrows
             public void incrementVoterCastUpVotesCount() {
-                useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
+                useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
                 assertThat(voter.getCastUpVotes()).isEqualTo(VOTER_INITIAL_CAST_UP_VOTES + 1);
                 verify(userService).update(voter);
             }
@@ -140,7 +140,7 @@ public class AnswerVotingUseCaseShould {
             @Test
             @SneakyThrows
             public void savesVoteInRepository() {
-                useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
+                useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
 
                 Vote expectedVote = new Vote();
                 expectedVote.setId(voteId);
@@ -161,7 +161,7 @@ public class AnswerVotingUseCaseShould {
             public void allowsUserToVoteAfterSufficientReputation(int reputation) {
                 voter.setReputation(reputation);
 
-                useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
+                useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest);
 
                 assertThat(answer.getScore()).isEqualTo(ANSWER_INITIAL_SCORE + 1);
             }
@@ -184,7 +184,7 @@ public class AnswerVotingUseCaseShould {
 
                 voter.setReputation(reputation);
 
-                assertThatThrownBy(() -> useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest)).isInstanceOf(InsufficientReputationException.class);
+                assertThatThrownBy(() -> useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), upVoteRequest)).isInstanceOf(InsufficientReputationException.class);
             }
 
             @Test
@@ -193,7 +193,7 @@ public class AnswerVotingUseCaseShould {
                 given(answerRepository.findById(answer.getId())).willReturn(Optional.of(answer));
                 given(userService.getUserById(UserId.validated(answerAuthor.getId()))).willReturn(answerAuthor);
 
-                assertThatThrownBy(() -> useCase.voteAnswer(UserId.validated(answerAuthor.getId()), AnswerId.validated(answer.getId()), upVoteRequest))
+                assertThatThrownBy(() -> useCase.vote(UserId.validated(answerAuthor.getId()), AnswerId.validated(answer.getId()), upVoteRequest))
                         .isInstanceOf(ImpermissibleOperationException.class);
             }
         }
@@ -225,14 +225,14 @@ public class AnswerVotingUseCaseShould {
             @Test
             @SneakyThrows
             public void returnIncrementedAnswerScore() {
-                Score score = useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
+                Score score = useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
                 assertThat(score.getScore()).isEqualTo(ANSWER_INITIAL_SCORE - 1);
             }
 
             @Test
             @SneakyThrows
             public void incrementScoreOfAnswer() {
-                useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
+                useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
                 assertThat(answer.getScore()).isEqualTo(ANSWER_INITIAL_SCORE - 1);
                 verify(answerRepository).save(answer);
             }
@@ -240,7 +240,7 @@ public class AnswerVotingUseCaseShould {
             @Test
             @SneakyThrows
             public void decrementAnswerAuthorReputation() {
-                useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
+                useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
                 assertThat(answerAuthor.getReputation()).isEqualTo(ANSWER_AUTHOR_INITIAL_REPUTATION - 5);
                 verify(userService).update(answerAuthor);
             }
@@ -248,7 +248,7 @@ public class AnswerVotingUseCaseShould {
             @Test
             @SneakyThrows
             public void incrementVoterCastDownVotesCount() {
-                useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
+                useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
                 assertThat(voter.getCastDownVotes()).isEqualTo(VOTER_INITIAL_CAST_DOWN_VOTES + 1);
                 verify(userService).update(voter);
             }
@@ -256,7 +256,7 @@ public class AnswerVotingUseCaseShould {
             @Test
             @SneakyThrows
             public void decrementVoterReputationByOne() {
-                useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
+                useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
                 assertThat(voter.getReputation()).isEqualTo(VOTER_INITIAL_REPUTATION - 1);
                 verify(userService).update(voter);
             }
@@ -264,7 +264,7 @@ public class AnswerVotingUseCaseShould {
             @Test
             @SneakyThrows
             public void savesVoteInRepository() {
-                useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
+                useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
 
                 Vote expectedVote = new Vote();
                 expectedVote.setId(voteId);
@@ -285,7 +285,7 @@ public class AnswerVotingUseCaseShould {
             public void allowsUserToVoteAfterSufficientReputation(int reputation) {
                 voter.setReputation(reputation);
 
-                useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
+                useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest);
 
                 assertThat(answer.getScore()).isEqualTo(ANSWER_INITIAL_SCORE - 1);
             }
@@ -308,7 +308,7 @@ public class AnswerVotingUseCaseShould {
 
                 voter.setReputation(reputation);
 
-                assertThatThrownBy(() -> useCase.voteAnswer(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest)).isInstanceOf(InsufficientReputationException.class);
+                assertThatThrownBy(() -> useCase.vote(UserId.validated(voter.getId()), AnswerId.validated(answer.getId()), downVoteRequest)).isInstanceOf(InsufficientReputationException.class);
             }
 
             @Test
@@ -317,7 +317,7 @@ public class AnswerVotingUseCaseShould {
                 given(answerRepository.findById(answer.getId())).willReturn(Optional.of(answer));
                 given(userService.getUserById(UserId.validated(answerAuthor.getId()))).willReturn(answerAuthor);
 
-                assertThatThrownBy(() -> useCase.voteAnswer(UserId.validated(answerAuthor.getId()), AnswerId.validated(answer.getId()), downVoteRequest))
+                assertThatThrownBy(() -> useCase.vote(UserId.validated(answerAuthor.getId()), AnswerId.validated(answer.getId()), downVoteRequest))
                         .isInstanceOf(ImpermissibleOperationException.class);
             }
         }

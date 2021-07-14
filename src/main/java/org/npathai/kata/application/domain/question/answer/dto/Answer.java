@@ -15,6 +15,9 @@ import javax.persistence.*;
 @PersistedEntity
 @Table(name = "answers")
 public class Answer {
+    public static final int UP_VOTE_AUTHOR_REP_GAIN = 10;
+    public static final int DOWN_VOTE_AUTHOR_REP_LOSS = 5;
+    public static final int DOWN_VOTE_VOTER_REP_LOSS = 1;
     @Id
     private String id;
     private String body;
@@ -37,26 +40,34 @@ public class Answer {
     }
 
     private Vote downVote(User author, User voter) throws InsufficientReputationException {
-        if (voter.getReputation() < 125) {
+        if (!voter.hasReputationToDownVote()) {
             throw new InsufficientReputationException();
         }
-        setScore(getScore() - 1);
-        author.setReputation(author.getReputation() - 5);
-        voter.setCastDownVotes(voter.getCastDownVotes() + 1);
-        voter.setReputation(voter.getReputation() - 1);
+        decrementScore();
+        voter.incrementCastDownVotes();
+        author.decrementReputationBy(DOWN_VOTE_AUTHOR_REP_LOSS);
+        voter.decrementReputationBy(DOWN_VOTE_VOTER_REP_LOSS);
 
         return aVote(VoteType.DOWN, voter);
     }
 
+    private void decrementScore() {
+        setScore(getScore() - 1);
+    }
+
     private Vote upVote(User author, User voter) throws InsufficientReputationException {
-        if (voter.getReputation() < 15) {
+        if (!voter.hasReputationToUpVote()) {
             throw new InsufficientReputationException();
         }
-        setScore(getScore() + 1);
-        author.setReputation(author.getReputation() + 10);
-        voter.setCastUpVotes(voter.getCastUpVotes() + 1);
+        incrementScore();
+        voter.incrementCastUpVotes();
+        author.incrementReputationBy(UP_VOTE_AUTHOR_REP_GAIN);
 
         return aVote(VoteType.UP, voter);
+    }
+
+    private void incrementScore() {
+        setScore(getScore() + 1);
     }
 
     private Vote aVote(VoteType type, User voter) {
@@ -65,5 +76,18 @@ public class Answer {
         vote.setVoterId(voter.getId());
         vote.setType(type.val);
         return vote;
+    }
+
+    public void cancelVote(Vote vote, User author, User voter) {
+        if (VoteType.from(vote.getType()) == VoteType.UP) {
+            decrementScore();
+            voter.decrementCastUpVotes();
+            author.decrementReputationBy(UP_VOTE_AUTHOR_REP_GAIN);
+        } else {
+            incrementScore();
+            voter.decrementCastDownVotes();
+            author.incrementReputationBy(DOWN_VOTE_AUTHOR_REP_LOSS);
+            voter.incrementReputationBy(DOWN_VOTE_VOTER_REP_LOSS);
+        }
     }
 }

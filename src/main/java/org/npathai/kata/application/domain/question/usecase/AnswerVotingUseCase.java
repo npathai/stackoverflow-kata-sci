@@ -32,8 +32,8 @@ public class AnswerVotingUseCase {
         this.userService = userService;
     }
 
-    public Score voteAnswer(UserId voterId, AnswerId answerId, VoteRequest request) throws
-            InsufficientReputationException, ImpermissibleOperationException, BadRequestParametersException {
+    public Score vote(UserId voterId, AnswerId answerId, VoteRequest request)
+            throws InsufficientReputationException, ImpermissibleOperationException, BadRequestParametersException {
         Answer answer = getAnswerExplosively(answerId);
         User author = userService.getUserById(UserId.validated(answer.getAuthorId()));
         User voter = userService.getUserById(voterId);

@@ -72,10 +72,10 @@ public class QuestionService {
     public Score voteAnswer(UserId userId, AnswerId answerId, VoteRequest request) throws ImpermissibleOperationException,
             BadRequestParametersException, InsufficientReputationException {
 
-        return answerVotingUseCase.voteAnswer(userId, answerId, request);
+        return answerVotingUseCase.vote(userId, answerId, request);
     }
 
     public Score cancelAnswerVote(UserId userId, AnswerId answerId) {
-        return answerCancelVotingUseCase.cancelAnswerVote(userId, answerId);
+        return answerCancelVotingUseCase.cancelVote(userId, answerId);
     }
 }
