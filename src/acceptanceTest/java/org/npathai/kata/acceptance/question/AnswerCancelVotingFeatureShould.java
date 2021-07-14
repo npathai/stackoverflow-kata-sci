@@ -80,7 +80,7 @@ public class AnswerCancelVotingFeatureShould extends AcceptanceTestBase {
     @VotingScenarioAcceptanceTest
     @DisplayName("revert revert original poster reputation")
     public void revertOriginalPosterReputation() {
-        assertThat(userDsl.getUserById(ORIGINAL_POSTER_ID).exec()
+        assertThat(userDsl.getUserById(ANSWERER_ID).exec()
                 .getReputation()).isEqualTo(3000);
     }
 
