@@ -32,7 +32,6 @@ public class UserService {
     }
 
     public void update(User user) {
-        user.setReputation(Math.max(1, user.getReputation()));
         userRepository.save(user);
     }
 }

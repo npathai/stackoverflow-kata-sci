@@ -42,7 +42,7 @@ public class User {
     }
 
     public void decrementReputationBy(int delta) {
-        setReputation(getReputation() - delta);
+        setReputation(Math.max(1, getReputation() - delta));
     }
 
     public void decrementCastUpVotes() {

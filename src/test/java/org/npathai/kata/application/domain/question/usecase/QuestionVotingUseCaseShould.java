@@ -158,7 +158,7 @@ public class QuestionVotingUseCaseShould {
         public void allowsUserToVoteAfterSufficientReputation(int reputation) {
             voter.setReputation(reputation);
 
-            Assertions.assertThat(useCase.voteQuestion(UserId.validated(voter.getId()),
+            assertThat(useCase.voteQuestion(UserId.validated(voter.getId()),
                     QuestionId.validated(question.getId()), voteRequest).getScore()).isEqualTo(12);
         }
 
@@ -172,7 +172,7 @@ public class QuestionVotingUseCaseShould {
         public void doesNotAllowUserWithInsufficientReputationToVote(int reputation) {
             voter.setReputation(reputation);
 
-            assertThatThrownBy(() -> Assertions.assertThat(useCase.voteQuestion(UserId.validated(voter.getId()),
+            assertThatThrownBy(() -> assertThat(useCase.voteQuestion(UserId.validated(voter.getId()),
                     QuestionId.validated(question.getId()), voteRequest)).isInstanceOf(InsufficientReputationException.class));
         }
     }
@@ -253,7 +253,7 @@ public class QuestionVotingUseCaseShould {
         public void allowsUserToVoteAfterSufficientReputation(int reputation) {
             voter.setReputation(reputation);
 
-            Assertions.assertThat(useCase.voteQuestion(UserId.validated(voter.getId()),
+            assertThat(useCase.voteQuestion(UserId.validated(voter.getId()),
                     QuestionId.validated(question.getId()), voteRequest).getScore()).isEqualTo(8);
         }
 
@@ -267,7 +267,7 @@ public class QuestionVotingUseCaseShould {
         public void doesNotAllowUserWithInsufficientReputationToVote(int reputation) {
             voter.setReputation(reputation);
 
-            assertThatThrownBy(() -> Assertions.assertThat(useCase.voteQuestion(UserId.validated(voter.getId()),
+            assertThatThrownBy(() -> assertThat(useCase.voteQuestion(UserId.validated(voter.getId()),
                     QuestionId.validated(question.getId()), voteRequest)).isInstanceOf(InsufficientReputationException.class));
         }
 

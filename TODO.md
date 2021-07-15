@@ -1,3 +1,7 @@
  - Create controller level integration test to check wiring with Spring and Remove depth level assertions from DSL afterwards
  - Tag creation should be case in-sensitive
  - Update test cases to use Builders instead of hand coding objects
+ - Close vote
+ - Hold off refactoring till we have completed Close voting feature and then search for appropriate abstraction
+ - Decide on Aggregate Roots
+ - 

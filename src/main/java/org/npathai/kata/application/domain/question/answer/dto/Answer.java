@@ -18,6 +18,7 @@ public class Answer {
     public static final int UP_VOTE_AUTHOR_REP_GAIN = 10;
     public static final int DOWN_VOTE_AUTHOR_REP_LOSS = 5;
     public static final int DOWN_VOTE_VOTER_REP_LOSS = 1;
+
     @Id
     private String id;
     private String body;
@@ -39,6 +40,14 @@ public class Answer {
         }
     }
 
+    public void cancelVote(Vote vote, User author, User voter) {
+        if (VoteType.from(vote.getType()) == VoteType.UP) {
+            cancelUpVote(author, voter);
+        } else {
+            cancelDownVote(author, voter);
+        }
+    }
+
     private Vote downVote(User author, User voter) throws InsufficientReputationException {
         if (!voter.hasReputationToDownVote()) {
             throw new InsufficientReputationException();
@@ -49,6 +58,13 @@ public class Answer {
         voter.decrementReputationBy(DOWN_VOTE_VOTER_REP_LOSS);
 
         return aVote(VoteType.DOWN, voter);
+    }
+
+    private void cancelDownVote(User author, User voter) {
+        incrementScore();
+        voter.decrementCastDownVotes();
+        author.incrementReputationBy(DOWN_VOTE_AUTHOR_REP_LOSS);
+        voter.incrementReputationBy(DOWN_VOTE_VOTER_REP_LOSS);
     }
 
     private void decrementScore() {
@@ -66,6 +82,12 @@ public class Answer {
         return aVote(VoteType.UP, voter);
     }
 
+    private void cancelUpVote(User author, User voter) {
+        decrementScore();
+        voter.decrementCastUpVotes();
+        author.decrementReputationBy(UP_VOTE_AUTHOR_REP_GAIN);
+    }
+
     private void incrementScore() {
         setScore(getScore() + 1);
     }
@@ -76,18 +98,5 @@ public class Answer {
         vote.setVoterId(voter.getId());
         vote.setType(type.val);
         return vote;
-    }
-
-    public void cancelVote(Vote vote, User author, User voter) {
-        if (VoteType.from(vote.getType()) == VoteType.UP) {
-            decrementScore();
-            voter.decrementCastUpVotes();
-            author.decrementReputationBy(UP_VOTE_AUTHOR_REP_GAIN);
-        } else {
-            incrementScore();
-            voter.decrementCastDownVotes();
-            author.incrementReputationBy(DOWN_VOTE_AUTHOR_REP_LOSS);
-            voter.incrementReputationBy(DOWN_VOTE_VOTER_REP_LOSS);
-        }
     }
 }
