@@ -1,7 +1,10 @@
 package org.npathai.kata.acceptance.question.dsl;
 
 import org.npathai.kata.acceptance.base.testview.Page;
-import org.npathai.kata.acceptance.question.testview.*;
+import org.npathai.kata.acceptance.question.testview.CloseVoteSummary;
+import org.npathai.kata.acceptance.question.testview.CreateQuestionRequest;
+import org.npathai.kata.acceptance.question.testview.Question;
+import org.npathai.kata.acceptance.question.testview.QuestionWithAnswers;
 import org.npathai.kata.acceptance.vote.testview.Score;
 import org.npathai.kata.acceptance.vote.testview.VoteRequest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -205,6 +208,42 @@ public class QuestionDsl {
             HttpEntity<VoteRequest> request = new HttpEntity<>(voteRequest, headers);
 
             ResponseEntity<Score> response = restTemplate.exchange(QUESTION_BASE_URL + "/" + questionId + "/votes", HttpMethod.DELETE,
+                    request, new ParameterizedTypeReference<>() {});
+
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+
+            return response.getBody();
+        }
+    }
+
+    public CloseVoteCommand aCloseVote() {
+        return new CloseVoteCommand();
+    }
+
+    public class CloseVoteCommand {
+
+        private String userId;
+        private String questionId;
+
+        public CloseVoteCommand byUser(String userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public CloseVoteCommand onQuestion(String questionId) {
+            this.questionId = questionId;
+            return this;
+        }
+
+
+        public CloseVoteSummary exec() {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("userId", userId);
+
+            HttpEntity<Void> request = new HttpEntity<>(null, headers);
+
+            ResponseEntity<CloseVoteSummary> response = restTemplate.exchange(QUESTION_BASE_URL + "/" + questionId + "/close-votes", HttpMethod.POST,
                     request, new ParameterizedTypeReference<>() {});
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

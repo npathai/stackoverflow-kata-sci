@@ -15,4 +15,5 @@ public class Question {
     private String authorId;
     private int answerCount;
     private int score;
+    private Long closedAt;
 }
