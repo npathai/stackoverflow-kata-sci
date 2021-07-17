@@ -104,31 +104,4 @@ class UserServiceShould {
 
         verify(userRepository).save(user);
     }
-
-    @ParameterizedTest
-    @SneakyThrows
-    @ValueSource(ints = {
-            0,
-            -1,
-            -2
-    })
-    public void nowAllowUserReputationToGoBelowOne(int reputation) {
-        User user = anUser()
-                .withId("1")
-                .withUsername("1")
-                .withEmail("user@domain.com")
-                .withReputation(reputation)
-                .build();
-
-        User expectedUser = anUser()
-                .withId("1")
-                .withUsername("1")
-                .withEmail("user@domain.com")
-                .withReputation(1)
-                .build();
-
-        userService.update(user);
-
-        verify(userRepository).save(expectedUser);
-    }
 }

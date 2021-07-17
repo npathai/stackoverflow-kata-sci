@@ -1,5 +1,6 @@
 package org.npathai.kata.application.api.question;
 
+import lombok.SneakyThrows;
 import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayload;
 import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayloadValidator;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
@@ -7,6 +8,7 @@ import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
+import org.npathai.kata.application.domain.question.dto.CloseVoteSummary;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
@@ -67,6 +69,17 @@ public class QuestionController {
             QuestionWithAnswers  questionWithAnswers = questionService.getQuestion(QuestionId.validated(questionId));
             return ResponseEntity.ok().body(questionWithAnswers);
         } catch(BadRequestParametersException ex) {
+            return ResponseEntity.badRequest().build();
+        } catch (UnknownEntityException ex) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @SneakyThrows
+    public ResponseEntity<CloseVoteSummary> closeVote(String userId, String questionId) {
+        try {
+            return ResponseEntity.ok(questionService.closeVote(UserId.validated(userId), QuestionId.validated(questionId)));
+        } catch (BadRequestParametersException ex) {
             return ResponseEntity.badRequest().build();
         } catch (UnknownEntityException ex) {
             return ResponseEntity.notFound().build();

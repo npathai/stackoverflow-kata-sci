@@ -16,6 +16,7 @@ import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
+import org.npathai.kata.application.domain.question.dto.CloseVoteSummary;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
@@ -33,6 +34,7 @@ import java.util.stream.IntStream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(MockitoExtension.class)
@@ -95,6 +97,14 @@ class QuestionControllerShould {
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
             assertThat(response.getBody()).isNull();
+        }
+
+        private PostQuestionRequestPayload aRequestPayload() {
+            PostQuestionRequestPayload payload = new PostQuestionRequestPayload();
+            payload.setTitle(QUESTION_TITLE);
+            payload.setBody(QUESTION_BODY);
+            payload.setTags(QUESTION_TAGS);
+            return payload;
         }
     }
 
@@ -183,7 +193,6 @@ class QuestionControllerShould {
     @Nested
     public class GetQuestionShould {
 
-
         @Test
         @SneakyThrows
         public void returnQuestionWithAnswers() {
@@ -222,12 +231,54 @@ class QuestionControllerShould {
         }
     }
 
-    private PostQuestionRequestPayload aRequestPayload() {
-        PostQuestionRequestPayload payload = new PostQuestionRequestPayload();
-        payload.setTitle(QUESTION_TITLE);
-        payload.setBody(QUESTION_BODY);
-        payload.setTags(QUESTION_TAGS);
-        return payload;
+    @Nested
+    public class CloseVoteShould {
+        private static final String CLOSE_VOTER_ID = "CV1";
+
+        @Test
+        @SneakyThrows
+        public void returnCloseVoteSummary() {
+            CloseVoteSummary closeVoteSummary = new CloseVoteSummary();
+            closeVoteSummary.setCastVotes(1);
+            closeVoteSummary.setRemainingVotes(3);
+
+            given(questionService.closeVote(UserId.validated(CLOSE_VOTER_ID), QuestionId.validated(QUESTION_ID)))
+                .willReturn(closeVoteSummary);
+
+            ResponseEntity<CloseVoteSummary> response = questionController.closeVote(CLOSE_VOTER_ID, QUESTION_ID);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isSameAs(closeVoteSummary);
+        }
+
+        @Test
+        public void returns400BadRequestWhenQuestionIdIsInvalid() {
+            ResponseEntity<CloseVoteSummary> response = questionController.closeVote(USER_ID, "");
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        public void returns400BadRequestWhenUserIdIsInvalid() {
+            ResponseEntity<CloseVoteSummary> response = questionController.closeVote("", QUESTION_ID);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        @SneakyThrows
+        public void return404NotFoundWhenQuestionNotFound() {
+            given(questionService.closeVote(eq(UserId.validated(USER_ID)), any(QuestionId.class)))
+                    .willThrow(UnknownEntityException.class);
+            ResponseEntity<CloseVoteSummary> response = questionController.closeVote(USER_ID, "unknown");
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @SneakyThrows
+        public void return404NotFoundWhenUserNotFound() {
+            given(questionService.closeVote(any(UserId.class), eq(QuestionId.validated(QUESTION_ID))))
+                    .willThrow(UnknownEntityException.class);
+            ResponseEntity<CloseVoteSummary> response = questionController.closeVote("unknown", QUESTION_ID);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
     }
 
     private Question aQuestion(String id) {

@@ -8,6 +8,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+// FIXME User should become an aggregate root and protect it's invariants
 @Data
 @PersistedEntity
 @Entity

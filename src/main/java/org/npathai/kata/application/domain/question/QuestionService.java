@@ -5,6 +5,7 @@ import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.dto.AnswerId;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
+import org.npathai.kata.application.domain.question.dto.CloseVoteSummary;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
@@ -77,5 +78,9 @@ public class QuestionService {
 
     public Score cancelAnswerVote(UserId userId, AnswerId answerId) {
         return answerCancelVotingUseCase.cancelVote(userId, answerId);
+    }
+
+    public CloseVoteSummary closeVote(UserId userId, QuestionId questionId) {
+        throw new UnsupportedOperationException();
     }
 }
