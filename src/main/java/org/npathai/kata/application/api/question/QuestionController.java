@@ -76,7 +76,8 @@ public class QuestionController {
     }
 
     @SneakyThrows
-    public ResponseEntity<CloseVoteSummary> closeVote(String userId, String questionId) {
+    @PostMapping("/{questionId}/close-votes")
+    public ResponseEntity<CloseVoteSummary> closeVote(@RequestHeader String userId, @PathVariable String questionId) {
         try {
             return ResponseEntity.ok(questionService.closeVote(UserId.validated(userId), QuestionId.validated(questionId)));
         } catch (BadRequestParametersException ex) {
