@@ -19,6 +19,7 @@ public class QuestionCloseVoteFeatureShould extends AcceptanceTestBase {
     private static final String CLOSE_VOTER_3_ID = "3";
     private static final String CLOSE_VOTER_4_ID = "4";
     private static final String ANSWERER_ID = "5";
+    private static final String INSUFFICIENT_REP_VOTER = "6";
 
     private QuestionDsl questionDsl;
     private AnswerDsl answerDsl;
@@ -73,5 +74,15 @@ public class QuestionCloseVoteFeatureShould extends AcceptanceTestBase {
     public void notAllowUserToPostAnswerAfterQuestionIsClosed() {
         assertThat(answerDsl.anAnswer().onQuestion(questionId).execReturningResponseEntity().getStatusCode())
                 .isEqualTo(HttpStatus.BAD_REQUEST);
+    }
+
+    @Test
+    @DisplayName("not allow user with insufficient reputation to vote")
+    public void notAllowUserWithInsufficientReputationToCloseVote() {
+        assertThat(questionDsl.aCloseVote()
+                .byUser(INSUFFICIENT_REP_VOTER)
+                .onQuestion(questionId)
+                .execReturningResponseEntity()
+                .getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
     }
 }
