@@ -26,6 +26,7 @@ public class QuestionService {
     private final QuestionCancelVotingUseCase questionCancelVotingUseCase;
     private final AnswerVotingUseCase answerVotingUseCase;
     private final AnswerCancelVotingUseCase answerCancelVotingUseCase;
+    private final QuestionCloseVotingUseCase questionCloseVotingUseCase;
 
     public QuestionService(PostQuestionUseCase postQuestionUseCase,
                            GetRecentQuestionsUseCase getRecentQuestionsUseCase,
@@ -34,7 +35,8 @@ public class QuestionService {
                            QuestionVotingUseCase questionVotingUseCase,
                            QuestionCancelVotingUseCase questionCancelVotingUseCase,
                            AnswerVotingUseCase answerVotingUseCase,
-                           AnswerCancelVotingUseCase answerCancelVotingUseCase) {
+                           AnswerCancelVotingUseCase answerCancelVotingUseCase,
+                           QuestionCloseVotingUseCase questionCloseVotingUseCase) {
         this.postQuestionUseCase = postQuestionUseCase;
         this.getRecentQuestionsUseCase = getRecentQuestionsUseCase;
         this.postAnswerUseCase = postAnswerUseCase;
@@ -43,6 +45,7 @@ public class QuestionService {
         this.questionCancelVotingUseCase = questionCancelVotingUseCase;
         this.answerVotingUseCase = answerVotingUseCase;
         this.answerCancelVotingUseCase = answerCancelVotingUseCase;
+        this.questionCloseVotingUseCase = questionCloseVotingUseCase;
     }
 
     public Question post(UserId userId, PostQuestionRequest validRequest) {
@@ -53,7 +56,7 @@ public class QuestionService {
         return getRecentQuestionsUseCase.getRecentQuestions();
     }
 
-    public Answer postAnswer(UserId authorId, QuestionId questionId, PostAnswerRequest request) {
+    public Answer postAnswer(UserId authorId, QuestionId questionId, PostAnswerRequest request) throws QuestionClosedException {
         return postAnswerUseCase.postAnswer(authorId, questionId, request);
     }
 
@@ -81,6 +84,6 @@ public class QuestionService {
     }
 
     public CloseVoteSummary closeVote(UserId userId, QuestionId questionId) {
-        throw new UnsupportedOperationException();
+        return questionCloseVotingUseCase.closeVote(userId, questionId);
     }
 }

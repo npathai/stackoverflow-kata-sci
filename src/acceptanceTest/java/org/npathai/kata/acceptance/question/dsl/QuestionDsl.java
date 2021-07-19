@@ -238,18 +238,22 @@ public class QuestionDsl {
 
 
         public CloseVoteSummary exec() {
-            HttpHeaders headers = new HttpHeaders();
-            headers.add("userId", userId);
-
-            HttpEntity<Void> request = new HttpEntity<>(null, headers);
-
-            ResponseEntity<CloseVoteSummary> response = restTemplate.exchange(QUESTION_BASE_URL + "/" + questionId + "/close-votes", HttpMethod.POST,
-                    request, new ParameterizedTypeReference<>() {});
+            ResponseEntity<CloseVoteSummary> response = execReturningResponseEntity();
 
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
             assertThat(response.getBody()).isNotNull();
 
             return response.getBody();
+        }
+
+        public ResponseEntity<CloseVoteSummary> execReturningResponseEntity() {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("userId", userId);
+
+            HttpEntity<Void> request = new HttpEntity<>(null, headers);
+
+            return restTemplate.exchange(QUESTION_BASE_URL + "/" + questionId + "/close-votes", HttpMethod.POST,
+                    request, new ParameterizedTypeReference<>() {});
         }
     }
 }

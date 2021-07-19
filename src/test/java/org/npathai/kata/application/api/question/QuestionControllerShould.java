@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayload;
 import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayloadValidator;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
+import org.npathai.kata.application.domain.question.QuestionClosedException;
 import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
@@ -161,6 +162,7 @@ class QuestionControllerShould {
         }
 
         @Test
+        @SneakyThrows
         public void returnCreatedAnswer() throws BadRequestParametersException {
             given(answerPayloadValidator.validate(payload)).willReturn(VALID_POST_ANSWER_REQUEST);
             given(questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID),
@@ -172,6 +174,7 @@ class QuestionControllerShould {
         }
 
         @Test
+        @SneakyThrows
         public void returns201CreatedStatusCode() throws BadRequestParametersException {
             given(answerPayloadValidator.validate(payload)).willReturn(VALID_POST_ANSWER_REQUEST);
             given(questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID),
@@ -184,6 +187,17 @@ class QuestionControllerShould {
         @Test
         public void returns400BadRequestStatusCodeWhenRequestIsInvalid() throws BadRequestParametersException {
             given(answerPayloadValidator.validate(payload)).willThrow(BadRequestParametersException.class);
+
+            assertThat(questionController.createAnswer(ANSWERER_ID, QUESTION_ID, payload).getStatusCode())
+                    .isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        @SneakyThrows
+        public void return400BadRequestWhenQuestionIsClosed() {
+            given(answerPayloadValidator.validate(payload)).willReturn(VALID_POST_ANSWER_REQUEST);
+            given(questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID),
+                    VALID_POST_ANSWER_REQUEST)).willThrow(QuestionClosedException.class);
 
             assertThat(questionController.createAnswer(ANSWERER_ID, QUESTION_ID, payload).getStatusCode())
                     .isEqualTo(HttpStatus.BAD_REQUEST);

@@ -4,10 +4,13 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.domain.question.QuestionBuilder;
+import org.npathai.kata.application.domain.question.QuestionClosedException;
 import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
@@ -17,9 +20,11 @@ import org.npathai.kata.application.domain.question.persistence.QuestionReposito
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.user.UserId;
 
+import java.sql.Timestamp;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,12 +49,12 @@ public class PostAnswerUseCaseShould {
     IdGenerator answerIdGenerator;
 
     @InjectMocks
-    PostAnswerUseCase questionService;
+    PostAnswerUseCase useCase;
 
     @BeforeEach
     public void setUp() {
         postAnswerRequest = PostAnswerRequest.valid("Body");
-        given(answerIdGenerator.get()).willReturn(ANSWER_ID);
+        BDDMockito.lenient().when(answerIdGenerator.get()).thenReturn(ANSWER_ID);
 
         question = QuestionBuilder.aQuestion().withId(QUESTION_ID).build();
         given(questionRepository.findById(QUESTION_ID)).willReturn(Optional.of(question));
@@ -64,24 +69,32 @@ public class PostAnswerUseCaseShould {
     @Test
     @SneakyThrows
     public void returnCreatedAnswer() {
-        Answer postedAnswer = questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
+        Answer postedAnswer = useCase.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
         assertThat(postedAnswer).isEqualTo(answer);
     }
 
     @Test
     @SneakyThrows
     public void saveAnswerToRepository() {
-        questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
+        useCase.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
         verify(answerRepository).save(answer);
     }
 
     @Test
     @SneakyThrows
     public void incrementAnswerCount() {
-        questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
-        questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
+        useCase.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
+        useCase.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID), postAnswerRequest);
 
         assertThat(question.getAnswerCount()).isEqualTo(2);
         verify(questionRepository, times(2)).save(question);
+    }
+
+    @Test
+    public void notAllowUserToPostAnswerWhenQuestionIsClosed() {
+        question.setClosedAt(System.currentTimeMillis());
+
+        assertThatThrownBy(() -> useCase.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID),
+                postAnswerRequest)).isInstanceOf(QuestionClosedException.class);
     }
 }

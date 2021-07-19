@@ -4,11 +4,14 @@ import lombok.Data;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.tag.dto.Tag;
 import org.npathai.kata.application.domain.user.InsufficientReputationException;
+import org.npathai.kata.application.domain.user.UserId;
 import org.npathai.kata.application.domain.user.dto.User;
 import org.npathai.kata.application.domain.vote.VoteType;
 import org.npathai.kata.application.domain.vote.dto.Vote;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
+import java.time.Clock;
 import java.util.List;
 
 @Data
@@ -29,6 +32,7 @@ public class Question {
     private String authorId;
     private int answerCount;
     private int score;
+    private Long closedAt;
 
     public Vote vote(VoteType type, User author, User voter) throws ImpermissibleOperationException, InsufficientReputationException {
         if (voter.equals(author)) {
@@ -92,5 +96,28 @@ public class Question {
         vote.setVoterId(voter.getId());
         vote.setType(voteType.val);
         return vote;
+    }
+
+    public CloseVote closeVote(UserId voterId, List<CloseVote> closeVotes, Clock clock) {
+        CloseVote closeVote = new CloseVote();
+        closeVote.setQuestionId(getId());
+        closeVote.setVoterId(voterId.getId());
+        if (closeVotes.size() + 1 == 4) {
+            setClosedAt(clock.millis());
+        }
+        // TODO check if there is a better approach for this
+        closeVotes.add(closeVote);
+        return closeVote;
+    }
+
+    public boolean isClosed() {
+        return closedAt != null;
+    }
+
+    public CloseVoteSummary getCloseVoteSummary(List<CloseVote> closeVotes) {
+        CloseVoteSummary closeVoteSummary = new CloseVoteSummary();
+        closeVoteSummary.setCastVotes(closeVotes.size());
+        closeVoteSummary.setRemainingVotes(4 - closeVoteSummary.getCastVotes());
+        return closeVoteSummary;
     }
 }

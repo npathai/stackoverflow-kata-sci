@@ -1,5 +1,6 @@
 package org.npathai.kata.application.domain.question.usecase;
 
+import org.npathai.kata.application.domain.question.QuestionClosedException;
 import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
@@ -24,8 +25,11 @@ public class PostAnswerUseCase {
         this.answerIdGenerator = answerIdGenerator;
     }
 
-    public Answer postAnswer(UserId authorId, QuestionId questionId, PostAnswerRequest request) {
+    public Answer postAnswer(UserId authorId, QuestionId questionId, PostAnswerRequest request) throws QuestionClosedException {
         Question question = getQuestionExplosively(questionId);
+        if (question.getClosedAt() != null) {
+            throw new QuestionClosedException();
+        }
         Answer answer = new Answer();
         answer.setId(answerIdGenerator.get());
         answer.setAuthorId(authorId.getId());

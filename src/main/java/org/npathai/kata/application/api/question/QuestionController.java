@@ -4,6 +4,7 @@ import lombok.SneakyThrows;
 import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayload;
 import org.npathai.kata.application.api.question.answer.PostAnswerRequestPayloadValidator;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
+import org.npathai.kata.application.domain.question.QuestionClosedException;
 import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
@@ -51,13 +52,14 @@ public class QuestionController {
     }
 
     @PostMapping("/{questionId}/a")
+    @SneakyThrows
     public ResponseEntity<Answer> createAnswer(@RequestHeader String userId, @PathVariable String questionId,
                                                @RequestBody PostAnswerRequestPayload payload) {
         try {
             PostAnswerRequest request = postAnswerRequestPayloadValidator.validate(payload);
             return ResponseEntity.created(null).body(questionService.postAnswer(UserId.validated(userId),
                     QuestionId.validated(questionId), request));
-        } catch (BadRequestParametersException ex) {
+        } catch (BadRequestParametersException | QuestionClosedException ex) {
             return ResponseEntity.badRequest().build();
         }
     }
