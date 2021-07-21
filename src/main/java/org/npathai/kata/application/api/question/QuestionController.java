@@ -14,8 +14,10 @@ import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.services.UnknownEntityException;
+import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.UserId;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -86,6 +88,8 @@ public class QuestionController {
             return ResponseEntity.badRequest().build();
         } catch (UnknownEntityException ex) {
             return ResponseEntity.notFound().build();
+        } catch (InsufficientReputationException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 }

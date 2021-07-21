@@ -23,6 +23,7 @@ import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
 import org.npathai.kata.application.domain.services.UnknownEntityException;
 import org.npathai.kata.application.domain.tag.dto.Tag;
+import org.npathai.kata.application.domain.user.InsufficientReputationException;
 import org.npathai.kata.application.domain.user.UserId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -292,6 +293,16 @@ class QuestionControllerShould {
                     .willThrow(UnknownEntityException.class);
             ResponseEntity<CloseVoteSummary> response = questionController.closeVote("unknown", QUESTION_ID);
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @SneakyThrows
+        public void return403UnauthorizedWhenUserDoesNotHaveSufficientReputation() {
+            given(questionService.closeVote(UserId.validated(CLOSE_VOTER_ID), QuestionId.validated(QUESTION_ID)))
+                    .willThrow(InsufficientReputationException.class);
+
+            assertThat(questionController.closeVote(CLOSE_VOTER_ID, QUESTION_ID).getStatusCode())
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
         }
     }
 

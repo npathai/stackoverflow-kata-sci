@@ -1,5 +1,6 @@
 package org.npathai.kata.application.domain.question;
 
+import lombok.SneakyThrows;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
@@ -83,7 +84,7 @@ public class QuestionService {
         return answerCancelVotingUseCase.cancelVote(userId, answerId);
     }
 
-    public CloseVoteSummary closeVote(UserId userId, QuestionId questionId) {
+    public CloseVoteSummary closeVote(UserId userId, QuestionId questionId) throws InsufficientReputationException {
         return questionCloseVotingUseCase.closeVote(userId, questionId);
     }
 }

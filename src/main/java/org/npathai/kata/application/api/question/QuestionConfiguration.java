@@ -78,9 +78,10 @@ public class QuestionConfiguration {
     public QuestionCloseVotingUseCase createQuestionCloseVotingUseCase(QuestionRepository questionRepository,
                                                                        IdGenerator closeVoteIdGenerator,
                                                                        CloseVoteRepository closeVoteRepository,
+                                                                       UserService userService,
                                                                        Clock clock) {
 
-        return new QuestionCloseVotingUseCase(questionRepository, closeVoteIdGenerator, closeVoteRepository, clock);
+        return new QuestionCloseVotingUseCase(questionRepository, closeVoteIdGenerator, closeVoteRepository, clock, userService);
     }
     @Bean
     public QuestionService createQuestionService(PostQuestionUseCase postQuestionUseCase,

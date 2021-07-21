@@ -53,4 +53,8 @@ public class User {
     public void decrementCastDownVotes() {
         setCastDownVotes(getCastDownVotes() - 1);
     }
+
+    public boolean hasReputationToCloseVote() {
+        return getReputation() >= 3000;
+    }
 }
