@@ -1,7 +1,6 @@
 package org.npathai.kata.application.api.question;
 
 import lombok.SneakyThrows;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -164,7 +163,7 @@ class QuestionControllerShould {
 
         @Test
         @SneakyThrows
-        public void returnCreatedAnswer() throws BadRequestParametersException {
+        public void returnCreatedAnswer() {
             given(answerPayloadValidator.validate(payload)).willReturn(VALID_POST_ANSWER_REQUEST);
             given(questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID),
                     VALID_POST_ANSWER_REQUEST)).willReturn(answer);
@@ -176,7 +175,7 @@ class QuestionControllerShould {
 
         @Test
         @SneakyThrows
-        public void returns201CreatedStatusCode() throws BadRequestParametersException {
+        public void returns201CreatedStatusCode() {
             given(answerPayloadValidator.validate(payload)).willReturn(VALID_POST_ANSWER_REQUEST);
             given(questionService.postAnswer(UserId.validated(ANSWERER_ID), QuestionId.validated(QUESTION_ID),
                     VALID_POST_ANSWER_REQUEST)).willReturn(answer);
