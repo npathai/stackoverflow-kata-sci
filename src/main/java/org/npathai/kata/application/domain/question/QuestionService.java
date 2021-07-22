@@ -87,4 +87,8 @@ public class QuestionService {
     public CloseVoteSummary closeVote(UserId userId, QuestionId questionId) throws InsufficientReputationException {
         return questionCloseVotingUseCase.closeVote(userId, questionId);
     }
+
+    public CloseVoteSummary reopenVote(UserId validated, QuestionId validated1) throws InsufficientReputationException {
+        throw new UnsupportedOperationException();
+    }
 }

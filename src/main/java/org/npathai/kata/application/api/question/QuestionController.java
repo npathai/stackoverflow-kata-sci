@@ -79,11 +79,22 @@ public class QuestionController {
         }
     }
 
-    @SneakyThrows
     @PostMapping("/{questionId}/close-votes")
     public ResponseEntity<CloseVoteSummary> closeVote(@RequestHeader String userId, @PathVariable String questionId) {
         try {
             return ResponseEntity.ok(questionService.closeVote(UserId.validated(userId), QuestionId.validated(questionId)));
+        } catch (BadRequestParametersException ex) {
+            return ResponseEntity.badRequest().build();
+        } catch (UnknownEntityException ex) {
+            return ResponseEntity.notFound().build();
+        } catch (InsufficientReputationException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+    }
+
+    public ResponseEntity<CloseVoteSummary> reopenVote(String userId, String questionId) {
+        try {
+            return ResponseEntity.ok(questionService.reopenVote(UserId.validated(userId), QuestionId.validated(questionId)));
         } catch (BadRequestParametersException ex) {
             return ResponseEntity.badRequest().build();
         } catch (UnknownEntityException ex) {

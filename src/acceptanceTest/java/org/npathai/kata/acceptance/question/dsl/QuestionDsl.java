@@ -256,4 +256,42 @@ public class QuestionDsl {
                     request, new ParameterizedTypeReference<>() {});
         }
     }
+
+    public ReopenVoteCommand aReopenVote() {
+        return new ReopenVoteCommand();
+    }
+
+    public class ReopenVoteCommand {
+
+        private String userId;
+        private String questionId;
+
+        public ReopenVoteCommand byUser(String userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public ReopenVoteCommand onQuestion(String questionId) {
+            this.questionId = questionId;
+            return this;
+        }
+
+
+        public CloseVoteSummary exec() {
+            ResponseEntity<CloseVoteSummary> response = execReturningResponseEntity();
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isNotNull();
+            return response.getBody();
+        }
+
+        public ResponseEntity<CloseVoteSummary> execReturningResponseEntity() {
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("userId", userId);
+
+            HttpEntity<Void> request = new HttpEntity<>(null, headers);
+
+            return restTemplate.exchange(QUESTION_BASE_URL + "/" + questionId + "/reopen-votes", HttpMethod.POST,
+                    request, new ParameterizedTypeReference<>() {});
+        }
+    }
 }

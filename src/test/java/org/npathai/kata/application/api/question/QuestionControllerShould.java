@@ -305,6 +305,66 @@ class QuestionControllerShould {
         }
     }
 
+    @Nested
+    public class ReopenVoteShould {
+        private static final String CLOSE_VOTER_ID = "CV1";
+
+        @Test
+        @SneakyThrows
+        public void returnCloseVoteSummary() {
+            CloseVoteSummary closeVoteSummary = new CloseVoteSummary();
+            closeVoteSummary.setCastVotes(1);
+            closeVoteSummary.setRemainingVotes(3);
+
+            given(questionService.reopenVote(UserId.validated(CLOSE_VOTER_ID), QuestionId.validated(QUESTION_ID)))
+                    .willReturn(closeVoteSummary);
+
+            ResponseEntity<CloseVoteSummary> response = questionController.reopenVote(CLOSE_VOTER_ID, QUESTION_ID);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+            assertThat(response.getBody()).isSameAs(closeVoteSummary);
+        }
+
+        @Test
+        public void returns400BadRequestWhenQuestionIdIsInvalid() {
+            ResponseEntity<CloseVoteSummary> response = questionController.reopenVote(USER_ID, "");
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        public void returns400BadRequestWhenUserIdIsInvalid() {
+            ResponseEntity<CloseVoteSummary> response = questionController.reopenVote("", QUESTION_ID);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        }
+
+        @Test
+        @SneakyThrows
+        public void return404NotFoundWhenQuestionNotFound() {
+            given(questionService.reopenVote(eq(UserId.validated(USER_ID)), any(QuestionId.class)))
+                    .willThrow(UnknownEntityException.class);
+            ResponseEntity<CloseVoteSummary> response = questionController.reopenVote(USER_ID, "unknown");
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @SneakyThrows
+        public void return404NotFoundWhenUserNotFound() {
+            given(questionService.reopenVote(any(UserId.class), eq(QuestionId.validated(QUESTION_ID))))
+                    .willThrow(UnknownEntityException.class);
+            ResponseEntity<CloseVoteSummary> response = questionController.reopenVote("unknown", QUESTION_ID);
+            assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        }
+
+        @Test
+        @SneakyThrows
+        public void return403UnauthorizedWhenUserDoesNotHaveSufficientReputation() {
+            given(questionService.reopenVote(UserId.validated(CLOSE_VOTER_ID), QuestionId.validated(QUESTION_ID)))
+                    .willThrow(InsufficientReputationException.class);
+
+            assertThat(questionController.reopenVote(CLOSE_VOTER_ID, QUESTION_ID).getStatusCode())
+                    .isEqualTo(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
     private Question aQuestion(String id) {
         Question question = new Question();
         question.setId(id);
