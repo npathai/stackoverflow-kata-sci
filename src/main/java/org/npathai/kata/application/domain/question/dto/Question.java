@@ -10,7 +10,6 @@ import org.npathai.kata.application.domain.vote.VoteType;
 import org.npathai.kata.application.domain.vote.dto.Vote;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.time.Clock;
 import java.util.List;
 
@@ -114,10 +113,26 @@ public class Question {
         return closedAt != null;
     }
 
-    public CloseVoteSummary getCloseVoteSummary(List<CloseVote> closeVotes) {
-        CloseVoteSummary closeVoteSummary = new CloseVoteSummary();
-        closeVoteSummary.setCastVotes(closeVotes.size());
-        closeVoteSummary.setRemainingVotes(4 - closeVoteSummary.getCastVotes());
-        return closeVoteSummary;
+    public VoteSummary getCloseVoteSummary(List<CloseVote> closeVotes) {
+        VoteSummary voteSummary = new VoteSummary();
+        voteSummary.setCastVotes(closeVotes.size());
+        voteSummary.setRemainingVotes(4 - voteSummary.getCastVotes());
+        return voteSummary;
+    }
+
+    public ReopenVote reopenVote(User voter, List<ReopenVote> reopenVotes) {
+        if (reopenVotes.size() == 3) {
+            setClosedAt(null);
+        }
+
+        ReopenVote reopenVote = new ReopenVote();
+        reopenVote.setVoterId(voter.getId());
+        reopenVote.setQuestionId(getId());
+        reopenVotes.add(reopenVote);
+        return reopenVote;
+    }
+
+    public boolean isOpen() {
+        return !isClosed();
     }
 }

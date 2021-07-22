@@ -56,7 +56,7 @@ public class QuestionReopenVoteUseCaseShould extends AcceptanceTestBase {
                 .exec();
 
         CloseVoteSummary reopenVoteSummary1 = questionDsl.aReopenVote()
-                .byUser(ORIGINAL_POSTER_ID)
+                .byUser(CLOSE_VOTER_4_ID)
                 .onQuestion(questionId)
                 .exec();
         assertThat(reopenVoteSummary1.getCastVotes()).isEqualTo(1);

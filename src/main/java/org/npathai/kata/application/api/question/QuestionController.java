@@ -9,7 +9,7 @@ import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
-import org.npathai.kata.application.domain.question.dto.CloseVoteSummary;
+import org.npathai.kata.application.domain.question.dto.VoteSummary;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
@@ -80,7 +80,7 @@ public class QuestionController {
     }
 
     @PostMapping("/{questionId}/close-votes")
-    public ResponseEntity<CloseVoteSummary> closeVote(@RequestHeader String userId, @PathVariable String questionId) {
+    public ResponseEntity<VoteSummary> closeVote(@RequestHeader String userId, @PathVariable String questionId) {
         try {
             return ResponseEntity.ok(questionService.closeVote(UserId.validated(userId), QuestionId.validated(questionId)));
         } catch (BadRequestParametersException ex) {
@@ -92,7 +92,8 @@ public class QuestionController {
         }
     }
 
-    public ResponseEntity<CloseVoteSummary> reopenVote(String userId, String questionId) {
+    @PostMapping("/{questionId}/reopen-votes")
+    public ResponseEntity<VoteSummary> reopenVote(@RequestHeader String userId, @PathVariable String questionId) {
         try {
             return ResponseEntity.ok(questionService.reopenVote(UserId.validated(userId), QuestionId.validated(questionId)));
         } catch (BadRequestParametersException ex) {

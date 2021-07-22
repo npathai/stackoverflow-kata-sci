@@ -1,7 +1,7 @@
  - Create controller level integration test to check wiring with Spring and Remove depth level assertions from DSL afterwards
  - Tag creation should be case in-sensitive
  - Update test cases to use Builders instead of hand coding objects
- - Close vote
  - Hold off refactoring till we have completed Close voting feature and then search for appropriate abstraction
  - Decide on Aggregate Roots
- - 
+ - User should not be able to close/reopen vote again
+ - Find what is behavior of stackoverflow if question is being closed -> reopened and back multiple times

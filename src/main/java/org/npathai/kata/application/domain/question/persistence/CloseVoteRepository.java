@@ -10,4 +10,6 @@ import java.util.List;
 public interface CloseVoteRepository extends JpaRepository<CloseVote, String> {
 
     List<CloseVote> findByQuestionId(String questionId);
+
+    void deleteByQuestionId(String questionId);
 }

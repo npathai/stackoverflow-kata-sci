@@ -2,7 +2,7 @@ package org.npathai.kata.application.domain.question.usecase;
 
 import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.dto.CloseVote;
-import org.npathai.kata.application.domain.question.dto.CloseVoteSummary;
+import org.npathai.kata.application.domain.question.dto.VoteSummary;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.persistence.CloseVoteRepository;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
@@ -34,7 +34,7 @@ public class QuestionCloseVotingUseCase {
         this.userService = userService;
     }
 
-    public CloseVoteSummary closeVote(UserId voterId, QuestionId questionId) throws InsufficientReputationException {
+    public VoteSummary closeVote(UserId voterId, QuestionId questionId) throws InsufficientReputationException {
         User voter = userService.getUserById(voterId);
         if (!voter.hasReputationToCloseVote()) {
             throw new InsufficientReputationException();

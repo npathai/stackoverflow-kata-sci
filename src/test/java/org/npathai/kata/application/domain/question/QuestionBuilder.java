@@ -2,6 +2,7 @@ package org.npathai.kata.application.domain.question;
 
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.tag.dto.Tag;
+import org.npathai.kata.application.domain.user.UserBuilder;
 
 import java.util.Collections;
 import java.util.List;
@@ -18,6 +19,7 @@ public final class QuestionBuilder {
     private String authorId;
     private int answerCount;
     private int score;
+    private Long closedAt;
 
     private QuestionBuilder() {
         int random = new Random().nextInt(Integer.MAX_VALUE);
@@ -84,6 +86,12 @@ public final class QuestionBuilder {
         question.setAuthorId(authorId);
         question.setAnswerCount(answerCount);
         question.setScore(score);
+        question.setClosedAt(closedAt);
         return question;
+    }
+
+    public QuestionBuilder withClosedAt(long closedAtTimestamp) {
+        this.closedAt = closedAtTimestamp;
+        return this;
     }
 }

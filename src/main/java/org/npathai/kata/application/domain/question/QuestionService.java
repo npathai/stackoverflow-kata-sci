@@ -1,12 +1,11 @@
 package org.npathai.kata.application.domain.question;
 
-import lombok.SneakyThrows;
 import org.npathai.kata.application.api.validation.BadRequestParametersException;
 import org.npathai.kata.application.domain.ImpermissibleOperationException;
 import org.npathai.kata.application.domain.question.answer.dto.Answer;
 import org.npathai.kata.application.domain.question.answer.dto.AnswerId;
 import org.npathai.kata.application.domain.question.answer.request.PostAnswerRequest;
-import org.npathai.kata.application.domain.question.dto.CloseVoteSummary;
+import org.npathai.kata.application.domain.question.dto.VoteSummary;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.dto.QuestionWithAnswers;
 import org.npathai.kata.application.domain.question.request.PostQuestionRequest;
@@ -28,6 +27,7 @@ public class QuestionService {
     private final AnswerVotingUseCase answerVotingUseCase;
     private final AnswerCancelVotingUseCase answerCancelVotingUseCase;
     private final QuestionCloseVotingUseCase questionCloseVotingUseCase;
+    private final QuestionReopenVotingUseCase questionReopenVotingUseCase;
 
     public QuestionService(PostQuestionUseCase postQuestionUseCase,
                            GetRecentQuestionsUseCase getRecentQuestionsUseCase,
@@ -37,7 +37,7 @@ public class QuestionService {
                            QuestionCancelVotingUseCase questionCancelVotingUseCase,
                            AnswerVotingUseCase answerVotingUseCase,
                            AnswerCancelVotingUseCase answerCancelVotingUseCase,
-                           QuestionCloseVotingUseCase questionCloseVotingUseCase) {
+                           QuestionCloseVotingUseCase questionCloseVotingUseCase, QuestionReopenVotingUseCase questionReopenVotingUseCase) {
         this.postQuestionUseCase = postQuestionUseCase;
         this.getRecentQuestionsUseCase = getRecentQuestionsUseCase;
         this.postAnswerUseCase = postAnswerUseCase;
@@ -47,6 +47,7 @@ public class QuestionService {
         this.answerVotingUseCase = answerVotingUseCase;
         this.answerCancelVotingUseCase = answerCancelVotingUseCase;
         this.questionCloseVotingUseCase = questionCloseVotingUseCase;
+        this.questionReopenVotingUseCase = questionReopenVotingUseCase;
     }
 
     public Question post(UserId userId, PostQuestionRequest validRequest) {
@@ -84,11 +85,11 @@ public class QuestionService {
         return answerCancelVotingUseCase.cancelVote(userId, answerId);
     }
 
-    public CloseVoteSummary closeVote(UserId userId, QuestionId questionId) throws InsufficientReputationException {
+    public VoteSummary closeVote(UserId userId, QuestionId questionId) throws InsufficientReputationException {
         return questionCloseVotingUseCase.closeVote(userId, questionId);
     }
 
-    public CloseVoteSummary reopenVote(UserId validated, QuestionId validated1) throws InsufficientReputationException {
-        throw new UnsupportedOperationException();
+    public VoteSummary reopenVote(UserId userId, QuestionId questionId) throws InsufficientReputationException {
+        return questionReopenVotingUseCase.reopenVote(userId, questionId);
     }
 }

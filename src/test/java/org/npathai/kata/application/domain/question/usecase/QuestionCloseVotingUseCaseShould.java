@@ -11,7 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.npathai.kata.application.domain.question.QuestionBuilder;
 import org.npathai.kata.application.domain.question.QuestionId;
 import org.npathai.kata.application.domain.question.dto.CloseVote;
-import org.npathai.kata.application.domain.question.dto.CloseVoteSummary;
+import org.npathai.kata.application.domain.question.dto.VoteSummary;
 import org.npathai.kata.application.domain.question.dto.Question;
 import org.npathai.kata.application.domain.question.persistence.CloseVoteRepository;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
@@ -99,14 +99,14 @@ public class QuestionCloseVotingUseCaseShould {
         given(userService.getUserById(UserId.validated(VOTER_ID_1)))
                 .willReturn(UserBuilder.anUser().withReputation(3000).withId(VOTER_ID_1).build());
 
-        CloseVoteSummary summary1 = useCase.closeVote(UserId.validated(VOTER_ID_1), QuestionId.validated(QUESTION_ID));
+        VoteSummary summary1 = useCase.closeVote(UserId.validated(VOTER_ID_1), QuestionId.validated(QUESTION_ID));
         assertThat(summary1.getCastVotes()).isEqualTo(1);
         assertThat(summary1.getRemainingVotes()).isEqualTo(3);
 
         CloseVote closeVote = aCloseVote(VOTER_ID_1);
         given(closeVoteRepository.findByQuestionId(QUESTION_ID)).willReturn(new ArrayList<>(List.of((closeVote))));
 
-        CloseVoteSummary summary2 = useCase.closeVote(UserId.validated(VOTER_ID_2), QuestionId.validated(QUESTION_ID));
+        VoteSummary summary2 = useCase.closeVote(UserId.validated(VOTER_ID_2), QuestionId.validated(QUESTION_ID));
         assertThat(summary2.getCastVotes()).isEqualTo(2);
         assertThat(summary2.getRemainingVotes()).isEqualTo(2);
     }
@@ -124,11 +124,11 @@ public class QuestionCloseVotingUseCaseShould {
 
         given(closeVoteRepository.findByQuestionId(QUESTION_ID)).willReturn(pastVotes);
 
-        CloseVoteSummary closeVoteSummary =
+        VoteSummary voteSummary =
                 useCase.closeVote(UserId.validated(VOTER_ID_4), QuestionId.validated(QUESTION_ID));
 
-        assertThat(closeVoteSummary.getCastVotes()).isEqualTo(4);
-        assertThat(closeVoteSummary.getRemainingVotes()).isEqualTo(0);
+        assertThat(voteSummary.getCastVotes()).isEqualTo(4);
+        assertThat(voteSummary.getRemainingVotes()).isEqualTo(0);
         assertThat(question.getClosedAt()).isEqualTo(clock.millis());
         verify(questionRepository).save(question);
     }

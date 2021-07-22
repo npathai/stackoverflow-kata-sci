@@ -7,6 +7,7 @@ import org.npathai.kata.application.domain.question.QuestionService;
 import org.npathai.kata.application.domain.question.answer.persistence.AnswerRepository;
 import org.npathai.kata.application.domain.question.persistence.CloseVoteRepository;
 import org.npathai.kata.application.domain.question.persistence.QuestionRepository;
+import org.npathai.kata.application.domain.question.persistence.ReopenVoteRepository;
 import org.npathai.kata.application.domain.question.usecase.*;
 import org.npathai.kata.application.domain.services.IdGenerator;
 import org.npathai.kata.application.domain.tag.persistence.TagRepository;
@@ -83,6 +84,17 @@ public class QuestionConfiguration {
 
         return new QuestionCloseVotingUseCase(questionRepository, closeVoteIdGenerator, closeVoteRepository, clock, userService);
     }
+
+    @Bean
+    public QuestionReopenVotingUseCase createQuestionReopenVotingUseCase(QuestionRepository questionRepository,
+                                                                         IdGenerator reopenVoteIdGenerator,
+                                                                         ReopenVoteRepository reopenVoteRepository,
+                                                                         UserService userService,
+                                                                         CloseVoteRepository closeVoteRepository) {
+        return new QuestionReopenVotingUseCase(questionRepository, reopenVoteIdGenerator,
+                reopenVoteRepository, userService, closeVoteRepository);
+    }
+
     @Bean
     public QuestionService createQuestionService(PostQuestionUseCase postQuestionUseCase,
                                                  GetRecentQuestionsUseCase getRecentQuestionsUseCase,
@@ -92,7 +104,8 @@ public class QuestionConfiguration {
                                                  QuestionCancelVotingUseCase questionCancelVotingUseCase,
                                                  AnswerVotingUseCase answerVotingUseCase,
                                                  AnswerCancelVotingUseCase answerCancelVotingUseCase,
-                                                 QuestionCloseVotingUseCase questionCloseVotingUseCase) {
+                                                 QuestionCloseVotingUseCase questionCloseVotingUseCase,
+                                                 QuestionReopenVotingUseCase questionReopenVotingUseCase) {
 
         return new QuestionService(postQuestionUseCase,
                 getRecentQuestionsUseCase,
@@ -102,7 +115,7 @@ public class QuestionConfiguration {
                 questionCancelVotingUseCase,
                 answerVotingUseCase,
                 answerCancelVotingUseCase,
-                questionCloseVotingUseCase);
+                questionCloseVotingUseCase, questionReopenVotingUseCase);
     }
 
     @Bean
